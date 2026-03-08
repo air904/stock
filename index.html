@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1a1f2e">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
 <!-- ✅ 全站放大 30%：把這裡改成 130% -->
 <style>
 html { font-size: 35px; }
@@ -1188,6 +1193,19 @@ setupAutoTimer();
   updateDashboard(p, pc, null);
 })();
 </script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        await navigator.serviceWorker.register("/sw.js");
+        console.log("✅ PWA Service Worker registered");
+      } catch (e) {
+        console.log("❌ SW register failed", e);
+      }
+    });
+  }
+</script>
 
+  
 </body>
 </html>
