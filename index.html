@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-<!-- PWA（如果你已經做過也沒關係，保留） -->
+<!-- PWA（可留） -->
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1a1f2e">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -21,17 +21,12 @@ body{
   min-height: calc(100vh / var(--uiScale));
 }
 
-/* 其餘原本樣式 */
+/* base */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e2e8f0;font-size:21px;padding-bottom:110px;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e2e8f0;font-size:21px;padding-bottom:220px;}
 
-/* Header */
-.hdr{
-  background:linear-gradient(135deg,#1a1f2e,#252d3f);
-  padding:18px 20px 14px;
-  position:relative;   /* ← 改這裡 */
-  border-bottom:1px solid #2d3748;
-}
+/* Header ✅ 不 sticky（避免手機 transform + sticky bug） */
+.hdr{background:linear-gradient(135deg,#1a1f2e,#252d3f);padding:18px 20px 14px;position:relative;border-bottom:1px solid #2d3748;}
 .hdr-top{display:flex;justify-content:space-between;align-items:center;gap:10px;}
 .hdr h1{font-size:22px;color:#63b3ed;font-weight:700;line-height:1.2;}
 .hdr p{color:#718096;font-size:15px;margin-top:3px;}
@@ -112,26 +107,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pbar-fill{height:10px;border-radius:5px;}
 .pbar-val{font-size:11px;font-weight:900;width:70px;text-align:right;}
 
-/* Table */
-.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px;}
-table{width:100%;border-collapse:collapse;font-size:12px;}
-th{background:#252d3f;color:#a0aec0;padding:7px 8px;text-align:right;font-weight:800;border-bottom:1px solid #2d3748;white-space:nowrap;}
-th:first-child,th:nth-child(2){text-align:left;}
-td{padding:6px 8px;border-bottom:1px solid #1a2030;text-align:right;white-space:nowrap;}
-td:first-child,td:nth-child(2){text-align:left;}
-.ra td{background:#161e2e;}.rb td{background:#1a1f2e;}
-.rr td{background:#2a1212;}.ro td{background:#221808;}
-.rg td{background:#0d1f12;}.ry td{background:#1e1c08;}
-.tot td{background:#252d3f!important;font-weight:900;color:#f6e05e;border-top:2px solid #4a5568;}
-.sub td{background:#1e2535!important;font-weight:800;color:#a0aec0;font-size:11px;}
-
 .ins{background:#1a2744;border-left:3px solid #4299e1;padding:10px 12px;margin:8px 0;border-radius:0 8px 8px 0;font-size:12px;line-height:1.7;color:#bee3f8;}
 .note{background:#1a1f2e;border:1px dashed #4a5568;padding:10px 11px;border-radius:8px;font-size:11px;color:#718096;margin-top:8px;line-height:1.6;}
-
-/* Period buttons */
-.periods{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;}
-.pbtn{background:#252d3f;color:#a0aec0;border:1px solid #2d3748;border-radius:18px;padding:6px 14px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap;}
-.pbtn.active{background:#2b6cb0;color:#fff;border-color:#3182ce;}
 
 /* Settings inputs */
 .inp{
@@ -147,6 +124,63 @@ td:first-child,td:nth-child(2){text-align:left;}
 .btnPrimary{background:linear-gradient(135deg,#2b6cb0,#3182ce);border:none;color:#fff;}
 .rowBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .hr{height:1px;background:#2d3748;margin:10px 0;}
+
+/* ✅ 固定螢幕下方「總覽列」：可收縮 + 左右滑切換 */
+.bottom-summary{
+  position:fixed;
+  left:0; right:0;
+  bottom:56px; /* 留給 bnav */
+  z-index:150;
+  padding:10px 10px calc(10px + env(safe-area-inset-bottom));
+  pointer-events:auto;
+}
+.bs-wrap{
+  background:rgba(17,24,39,0.94);
+  backdrop-filter: blur(10px);
+  border:1px solid #2d3748;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,0.35);
+}
+.bs-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;
+  border-bottom:1px solid rgba(45,55,72,0.7);
+}
+.bs-handle{
+  height:4px;width:44px;border-radius:999px;background:#2d3748;margin:0 auto;
+}
+.bs-title{
+  font-size:11px;font-weight:900;color:#a0aec0;letter-spacing:0.6px;
+}
+.bs-hint{
+  font-size:10px;color:#718096;
+}
+.bs-pages{
+  display:flex;
+  width:300%;
+  transition: transform 220ms ease;
+  touch-action: pan-y;
+}
+.bs-page{
+  width:calc(100% / 3);
+  display:flex;
+  justify-content:space-around;
+  padding:10px 8px 8px;
+}
+.bs-item{flex:1;text-align:center;}
+.bs-label{font-size:11px;color:#718096;}
+.bs-value{font-size:16px;font-weight:950;margin-top:2px;}
+.bs-dots{display:flex;gap:6px;justify-content:center;padding:8px 0 10px;}
+.bs-dot{width:6px;height:6px;border-radius:50%;background:#2d3748;}
+.bs-dot.on{background:#63b3ed;}
+
+/* compact mode（滑動時自動收縮成小條） */
+.bs-compact .bs-page{padding:6px 8px 6px;}
+.bs-compact .bs-label{display:none;}
+.bs-compact .bs-value{font-size:14px;}
+.bs-compact .bs-top{padding:6px 12px;}
+.bs-compact .bs-hint{display:none;}
 </style>
 </head>
 
@@ -156,7 +190,7 @@ td:first-child,td:nth-child(2){text-align:left;}
 <div class="hdr">
   <div class="hdr-top">
     <div>
-      <h1>📊 投資組合報告 <span style="font-size:0.7em;color:#4a5568;font-weight:700">v27</span></h1>
+      <h1>📊 投資組合報告 <span style="font-size:0.7em;color:#4a5568;font-weight:700">v28</span></h1>
       <p>NETGEAR PM ｜ 目標 2029 退休</p>
     </div>
     <button class="btn-refresh" id="refreshBtn" onclick="fetchLatestPrices()">
@@ -272,7 +306,7 @@ td:first-child,td:nth-child(2){text-align:left;}
   </div>
 
   <div class="ins">
-    📌 <strong>提示：</strong>你可以在「設定」頁調整「顯示放大」，不用再改程式。
+    📌 <strong>提示：</strong>下方固定總覽列可左右滑切換。滑動頁面時會自動縮成小條，方便看內容。
   </div>
 </div>
 
@@ -293,8 +327,6 @@ td:first-child,td:nth-child(2){text-align:left;}
 
   <div class="st">🟡 個股</div>
   <div id="stkCards"></div>
-
-  <div class="note">（歷史快照圖表版位保留，你若要加回 Chart.js 圖表，我也可以直接補回完整版本。）</div>
 </div>
 
 <!-- ══ 負債 ══ -->
@@ -378,6 +410,55 @@ td:first-child,td:nth-child(2){text-align:left;}
   </button>
 </div>
 
+<!-- ✅ 固定螢幕下方「總覽列」 -->
+<div class="bottom-summary" id="bottomSummary">
+  <div class="bs-wrap" id="bsWrap">
+    <div class="bs-top">
+      <div style="width:70px"></div>
+      <div style="flex:1;text-align:center">
+        <div class="bs-handle"></div>
+      </div>
+      <div style="width:70px;text-align:right">
+        <span class="bs-hint">左右滑</span>
+      </div>
+    </div>
+
+    <div style="padding:0 12px 0;display:flex;justify-content:space-between;align-items:center;">
+      <div class="bs-title" id="bsTitle">總覽</div>
+      <div class="bs-hint" id="bsSub">固定列 · 自動收縮</div>
+    </div>
+
+    <div class="bs-pages" id="bsPages">
+      <!-- Page 1 -->
+      <div class="bs-page">
+        <div class="bs-item"><div class="bs-label">總資產</div><div class="bs-value cy" id="bs-asset">—</div></div>
+        <div class="bs-item"><div class="bs-label">淨資產</div><div class="bs-value co" id="bs-net">—</div></div>
+        <div class="bs-item"><div class="bs-label">負債比</div><div class="bs-value cr" id="bs-dr">—</div></div>
+      </div>
+
+      <!-- Page 2 -->
+      <div class="bs-page">
+        <div class="bs-item"><div class="bs-label">當日損益</div><div class="bs-value" id="bs-day">—</div></div>
+        <div class="bs-item"><div class="bs-label">當日%</div><div class="bs-value" id="bs-daypct">—</div></div>
+        <div class="bs-item"><div class="bs-label">盤中/收盤</div><div class="bs-value cb" id="bs-mk">—</div></div>
+      </div>
+
+      <!-- Page 3 -->
+      <div class="bs-page">
+        <div class="bs-item"><div class="bs-label">總損益</div><div class="bs-value" id="bs-total">—</div></div>
+        <div class="bs-item"><div class="bs-label">總%</div><div class="bs-value" id="bs-totalpct">—</div></div>
+        <div class="bs-item"><div class="bs-label">質押維持</div><div class="bs-value" id="bs-pledge">—</div></div>
+      </div>
+    </div>
+
+    <div class="bs-dots">
+      <div class="bs-dot on" id="dot0"></div>
+      <div class="bs-dot" id="dot1"></div>
+      <div class="bs-dot" id="dot2"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Bottom Nav -->
 <nav class="bnav">
   <button class="bnav-item active" onclick="showSec('ov',this)"><span class="ico">💎</span>總覽</button>
@@ -388,9 +469,8 @@ td:first-child,td:nth-child(2){text-align:left;}
 
 <script>
 /* =========================
-   ✅ 你的 Worker API（務必確認）
+   ✅ 你的 Worker API
    ========================= */
-// 你之前是 https://air904.air904.workers.dev
 const QUOTE_API = "https://air904.air904.workers.dev/quotes";
 
 /* =========================
@@ -440,6 +520,11 @@ let DEBTS = [
 let lastKnown = null;
 let autoTimer = null;
 
+/* bottom summary state */
+let bsIndex = 0;        // 0..2
+let bsTouch = null;     // touch tracking
+let bsCompact = false;  // compact mode
+
 /* =========================
    helpers
    ========================= */
@@ -469,7 +554,7 @@ function escapeHtml(s){
 }
 
 /* =========================
-   UI Scale (NEW)
+   UI Scale
    ========================= */
 function loadUiScale(){
   try{
@@ -617,12 +702,55 @@ function computePortfolio(prices, prevCloses){
   return { totCur, totCost, totPrev, cash, debt, pledgeBal, totalAsset, net, dr, pnl, pnlPct, dayPnl, dayPct, bondV, etfV, stkV, pledge };
 }
 
+function marketText(marketState){
+  // Worker 可能回 null，這裡用 prevClose 是否存在來猜（保守）
+  if(marketState==='REGULAR') return '盤中';
+  if(marketState==='CLOSED') return '收盤';
+  if(marketState==='POST' || marketState==='POSTPOST') return '盤後';
+  return '—';
+}
+
 function applyMarketBadge(marketState){
   const el=document.getElementById('mkBadge');
   if(!el) return;
   const isLive = marketState==='REGULAR';
   el.textContent = `狀態：${isLive ? '盤中' : '收盤'}`;
   el.className = 'badge ' + (isLive ? 'bgG' : 'bgR');
+
+  // bottom summary
+  const mk=document.getElementById('bs-mk');
+  if(mk){
+    const t = marketText(marketState);
+    mk.textContent = t;
+    mk.className = 'bs-value ' + (t==='盤中'?'cg':(t==='收盤'?'cr':'cb'));
+  }
+}
+
+/* ✅ bottom summary update */
+function updateBottomSummary(c, marketState){
+  // page 1
+  setEl('bs-asset', fmt(c.totalAsset)+'萬', 'bs-value cy');
+  setEl('bs-net', fmt(c.net)+'萬', 'bs-value '+(c.net>=0?'co':'cr'));
+  setEl('bs-dr', fmt(c.dr,1)+'%', 'bs-value cr');
+
+  // page 2
+  setEl('bs-day', fmtPnl(c.dayPnl), 'bs-value '+(c.dayPnl>=0?'g':'r'));
+  setEl('bs-daypct', fmtPct(c.dayPct), 'bs-value '+(c.dayPct>=0?'g':'r'));
+  // bs-mk 在 applyMarketBadge 裡更新（順便控色）
+
+  // page 3
+  setEl('bs-total', fmtPnl(c.pnl), 'bs-value '+(c.pnl>=0?'g':'r'));
+  setEl('bs-totalpct', fmtPct(c.pnlPct), 'bs-value '+(c.pnlPct>=0?'g':'r'));
+  const pledgeCls = c.pledge>160?'cg':(c.pledge>130?'co':'cr');
+  setEl('bs-pledge', fmt(c.pledge,0)+'%', 'bs-value '+pledgeCls);
+
+  // title/sub
+  const titles = ['總覽', '當日', '總損益'];
+  document.getElementById('bsTitle').textContent = titles[bsIndex] || '總覽';
+  document.getElementById('bsSub').textContent = bsCompact ? '小條模式' : '固定列 · 自動收縮';
+
+  // market text
+  applyMarketBadge(marketState);
 }
 
 function updateDashboard(prices, prevCloses, marketState){
@@ -648,6 +776,14 @@ function updateDashboard(prices, prevCloses, marketState){
 
   const dc = c.dayPnl>=0?'cg':'cr';
   setEl('ov-day', fmtPnl(c.dayPnl), 'cv '+dc);
+
+  // pnl section
+  setEl('p-val', fmt(c.totCur)+'萬', 'cv cy');
+  setEl('p-sub', '最新報價', 'cs');
+  setEl('p-pnl', fmtPnl(c.pnl), 'cv '+pc);
+  setEl('p-pnl-sub', fmtPct(c.pnlPct)+' vs 成本', 'cs');
+  setEl('p-day', fmtPnl(c.dayPnl), 'cv '+dc);
+  setEl('p-cost', fmt(c.totCost)+'萬', 'cv cb');
 
   // day bar
   const db=document.getElementById('dayBar');
@@ -682,11 +818,13 @@ function updateDashboard(prices, prevCloses, marketState){
   setEl('pb-net', fmt(c.net)+'萬', 'pbar-val co');
 
   renderHoldingCards(prices, prevCloses);
-  applyMarketBadge(marketState);
   renderDebtPage();
 
   const ts=now.toLocaleTimeString('zh-TW');
   document.getElementById('priceStatus').textContent = `✅ 已更新｜${ts}`;
+
+  // ✅ bottom summary
+  updateBottomSummary(c, marketState);
 }
 
 /* =========================
@@ -728,17 +866,14 @@ function renderDebtPage(){
    settings page (add/remove/edit)
    ========================= */
 function renderSettingsPage(){
-  // ui scale
   const s = loadUiScale();
   const sel = document.getElementById('uiScaleSel');
   if(sel) sel.value = s.toFixed(2);
 
-  // cash
   document.getElementById('cash-hsbc').value = CASH.hsbc ?? 0;
   document.getElementById('cash-taishin').value = CASH.taishin ?? 0;
   document.getElementById('cash-ctbc').value = CASH.ctbc ?? 0;
 
-  // debts
   const debtEl = document.getElementById('debtEditor');
   debtEl.innerHTML='';
   DEBTS.forEach((d,idx)=>{
@@ -763,7 +898,6 @@ function renderSettingsPage(){
     `;
   });
 
-  // holdings
   const holdEl = document.getElementById('holdEditor');
   holdEl.innerHTML='';
   HOLDINGS.forEach((h,idx)=>{
@@ -794,7 +928,6 @@ function renderSettingsPage(){
     `;
   });
 
-  // auto
   const auto = loadAuto();
   document.getElementById('autoOn').value = auto.on ? 'on' : 'off';
   document.getElementById('autoMin').value = auto.min;
@@ -823,13 +956,11 @@ function removeHolding(idx){
 }
 
 function saveAllSettings(){
-  // cash
   CASH.hsbc = parseFloat(document.getElementById('cash-hsbc')?.value || '0') || 0;
   CASH.taishin = parseFloat(document.getElementById('cash-taishin')?.value || '0') || 0;
   CASH.ctbc = parseFloat(document.getElementById('cash-ctbc')?.value || '0') || 0;
   saveCash();
 
-  // debts
   document.querySelectorAll('[data-debt]').forEach(inp=>{
     const idx = parseInt(inp.getAttribute('data-debt'),10);
     const k = inp.getAttribute('data-k');
@@ -842,7 +973,6 @@ function saveAllSettings(){
   }
   saveDebts();
 
-  // holdings
   document.querySelectorAll('[data-h]').forEach(inp=>{
     const idx = parseInt(inp.getAttribute('data-h'),10);
     const k = inp.getAttribute('data-k');
@@ -856,7 +986,6 @@ function saveAllSettings(){
 
   saveHoldings();
 
-  // re-render with lastKnown if exists, else base
   if(lastKnown?.prices){
     updateDashboard(lastKnown.prices, lastKnown.prevCloses, lastKnown.marketState);
   }else{
@@ -926,7 +1055,6 @@ async function fetchLatestPrices(isAuto=false){
       if(!marketState && it?.marketState) marketState = it.marketState;
     });
 
-    // fallback
     HOLDINGS.forEach(h=>{
       if(prices[h.sym]==null) prices[h.sym] = (+h.base||0);
       if(prevCloses[h.sym]==null) prevCloses[h.sym] = (+h.base||0);
@@ -948,26 +1076,128 @@ async function fetchLatestPrices(isAuto=false){
 }
 
 /* =========================
+   ✅ Bottom summary: swipe + compact on scroll
+   ========================= */
+function bsRender(){
+  const pages = document.getElementById('bsPages');
+  pages.style.transform = `translateX(-${bsIndex * (100/3)}%)`;
+
+  document.getElementById('dot0').classList.toggle('on', bsIndex===0);
+  document.getElementById('dot1').classList.toggle('on', bsIndex===1);
+  document.getElementById('dot2').classList.toggle('on', bsIndex===2);
+
+  if(lastKnown?.prices){
+    const c = computePortfolio(lastKnown.prices, lastKnown.prevCloses);
+    updateBottomSummary(c, lastKnown.marketState);
+  }
+}
+function bsSetCompact(on){
+  bsCompact = !!on;
+  document.getElementById('bsWrap').classList.toggle('bs-compact', bsCompact);
+  // 更新副標
+  const c = lastKnown?.prices ? computePortfolio(lastKnown.prices, lastKnown.prevCloses) : null;
+  if(c) updateBottomSummary(c, lastKnown.marketState);
+}
+
+/* swipe detection on bottom bar */
+function initBottomSwipe(){
+  const wrap = document.getElementById('bottomSummary');
+  const pages = document.getElementById('bsPages');
+
+  const onTouchStart = (e)=>{
+    if(!e.touches || e.touches.length!==1) return;
+    const t=e.touches[0];
+    bsTouch = { x0:t.clientX, y0:t.clientY, t0:Date.now(), moved:false };
+  };
+  const onTouchMove = (e)=>{
+    if(!bsTouch || !e.touches || e.touches.length!==1) return;
+    const t=e.touches[0];
+    const dx = t.clientX - bsTouch.x0;
+    const dy = t.clientY - bsTouch.y0;
+
+    // 只在「更像水平」的手勢時處理，避免影響頁面上下滑
+    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10){
+      bsTouch.moved = true;
+      e.preventDefault();
+      const base = -(bsIndex * (100/3));
+      const dragPct = (dx / window.innerWidth) * 100;
+      pages.style.transition = 'none';
+      pages.style.transform = `translateX(${base + dragPct}%)`;
+    }
+  };
+  const onTouchEnd = ()=>{
+    if(!bsTouch){ return; }
+    const moved = bsTouch.moved;
+    pages.style.transition = 'transform 220ms ease';
+    if(moved){
+      const dx = (event?.changedTouches?.[0]?.clientX ?? 0) - bsTouch.x0;
+      const v = dx / Math.max(1,(Date.now()-bsTouch.t0)); // px/ms
+      if(dx < -50 || v < -0.45) bsIndex = Math.min(2, bsIndex+1);
+      else if(dx > 50 || v > 0.45) bsIndex = Math.max(0, bsIndex-1);
+      bsRender();
+    }else{
+      bsRender();
+    }
+    bsTouch = null;
+  };
+
+  wrap.addEventListener('touchstart', onTouchStart, {passive:true});
+  wrap.addEventListener('touchmove', onTouchMove, {passive:false});
+  wrap.addEventListener('touchend', onTouchEnd, {passive:true});
+}
+
+/* compact on scroll (shrink when scrolling down, expand when scrolling up or near top) */
+function initScrollCompact(){
+  let lastY = window.scrollY;
+  let ticking = false;
+
+  const update = ()=>{
+    const y = window.scrollY;
+    const dy = y - lastY;
+
+    if(y < 30){
+      bsSetCompact(false);
+    }else{
+      if(dy > 8) bsSetCompact(true);      // scrolling down
+      else if(dy < -10) bsSetCompact(false); // scrolling up
+    }
+
+    lastY = y;
+    ticking = false;
+  };
+
+  window.addEventListener('scroll', ()=>{
+    if(!ticking){
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  }, {passive:true});
+}
+
+/* =========================
    init
    ========================= */
 (function init(){
-  // ✅ 先套用 UI 放大（最重要：要在 render 前）
   setUiScale(loadUiScale());
-
   loadAll();
   renderDebtPage();
   renderSettingsPage();
   setupAutoTimer();
 
-  // base render (不用先更新就能看到)
+  // base render
   const p={}, pc={};
   HOLDINGS.forEach(h=>{ p[h.sym]=(+h.base||0); pc[h.sym]=(+h.base||0); });
   lastKnown = { prices:p, prevCloses:pc, marketState:null, ts:Date.now() };
   updateDashboard(p, pc, null);
+
+  // bottom summary
+  initBottomSwipe();
+  initScrollCompact();
+  bsRender();
 })();
 </script>
 
-<!-- PWA Service Worker（可留可不留） -->
+<!-- PWA Service Worker（可留） -->
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", async () => {
