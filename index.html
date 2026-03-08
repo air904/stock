@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
 <style>
 html { font-size: 27px; }
 * { font-size: inherit !important; }
@@ -16,19 +17,25 @@ html { font-size: 27px; }
 .rn { font-size: 1.8rem !important; }
 th, td { font-size: 0.95rem !important; }
 </style>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e2e8f0;font-size:21px;padding-bottom:100px;}
 
 /* Header */
 .hdr{background:linear-gradient(135deg,#1a1f2e,#252d3f);padding:18px 20px 14px;position:sticky;top:0;z-index:100;border-bottom:1px solid #2d3748;}
-.hdr-top{display:flex;justify-content:space-between;align-items:center;}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;gap:10px;}
 .hdr h1{font-size:22px;color:#63b3ed;font-weight:700;}
 .hdr p{color:#718096;font-size:15px;margin-top:3px;}
 .btn-refresh{background:linear-gradient(135deg,#2b6cb0,#3182ce);color:#fff;border:none;border-radius:24px;padding:12px 20px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;}
 .btn-refresh:disabled{background:#2d3748;color:#718096;}
 .spin{display:inline-block;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.hdr-btns{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap;}
+.hdr-mini{font-size:11px;color:#a0aec0;line-height:1.3;text-align:right;}
+.hdr-mini b{color:#f6e05e;font-weight:800;}
 
 /* Day PNL bar */
 .day-bar{display:none;background:#141820;padding:10px 16px;border-bottom:1px solid #2d3748;overflow-x:auto;}
@@ -79,7 +86,7 @@ td:first-child,td:nth-child(2){text-align:left;}
 .sub td{background:#1e2535!important;font-weight:600;color:#a0aec0;font-size:10px;}
 .g{color:#68d391;}.r{color:#fc8181;}.y{color:#f6e05e;}.o{color:#f6ad55;}.gr{color:#718096;}
 
-/* Holding card (mobile list view) */
+/* Holding card */
 .hcard{background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:11px 13px;margin-bottom:8px;}
 .hcard-top{display:flex;justify-content:space-between;align-items:flex-start;}
 .hcard-sym{font-size:13px;font-weight:700;color:#63b3ed;}
@@ -129,7 +136,7 @@ td:first-child,td:nth-child(2){text-align:left;}
 .pbtn{background:#252d3f;color:#a0aec0;border:1px solid #2d3748;border-radius:16px;padding:5px 14px;font-size:11px;cursor:pointer;white-space:nowrap;}
 .pbtn.active{background:#2b6cb0;color:#fff;border-color:#3182ce;}
 
-/* Retire big nums */
+/* Retire */
 .rn{font-size:24px;font-weight:900;color:#68d391;}
 .rs{font-size:10px;color:#74c69d;margin-top:2px;line-height:1.4;}
 .retire-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
@@ -148,18 +155,34 @@ td:first-child,td:nth-child(2){text-align:left;}
 .snap-row:last-child{border-bottom:none;}
 </style>
 </head>
+
 <body>
 
 <!-- Header -->
 <div class="hdr">
   <div class="hdr-top">
     <div>
-      <h1>📊 投資組合報告 <span style="font-size:0.6em;color:#4a5568;font-weight:400">v25</span></h1>
+      <h1>📊 投資組合報告 <span style="font-size:0.6em;color:#4a5568;font-weight:400">v26</span></h1>
       <p>NETGEAR PM ｜ 目標 2029 退休</p>
     </div>
-    <button class="btn-refresh" id="refreshBtn" onclick="fetchLatestPrices()">
-      <span id="refreshIcon">🔄</span><span>更新</span>
-    </button>
+
+    <div class="hdr-right">
+      <div class="hdr-btns">
+        <button class="btn-refresh" id="refreshBtn" onclick="fetchLatestPrices(false)">
+          <span id="refreshIcon">🔄</span><span>更新</span>
+        </button>
+
+        <button class="btn-refresh" id="autoBtn" onclick="toggleAutoRefresh()"
+          style="background:linear-gradient(135deg,#2d3748,#252d3f);border:1px solid #2d3748;">
+          <span id="autoIcon">⏱</span><span id="autoText">自動：關</span>
+        </button>
+      </div>
+
+      <div class="hdr-mini">
+        <span id="marketMini">狀態：—</span><br>
+        <span id="nextMini">下次更新：—</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -211,7 +234,6 @@ td:first-child,td:nth-child(2){text-align:left;}
     <div class="card"><div class="cl">📦 投入成本</div><div class="cv cb">6,751.4萬</div><div class="cs">各持股成本合計</div></div>
   </div>
 
-  <!-- 持股卡片列表 -->
   <div class="st">🔵 債券ETF</div>
   <div id="bondCards"></div>
   <div class="st">🟢 股票ETF</div>
@@ -219,11 +241,11 @@ td:first-child,td:nth-child(2){text-align:left;}
   <div class="st">🟡 個股</div>
   <div id="stkCards"></div>
 
-  <!-- 歷史績效 -->
   <div class="st">📈 資產損益歷史追蹤
-    <button onclick="saveSnapshot()" style="margin-left:8px;background:#2b6cb0;color:#fff;border:none;border-radius:12px;padding:3px 10px;font-size:10px;cursor:pointer;font-weight:700;">💾 儲存</button>
+    <button onclick="saveSnapshot(false,false)" style="margin-left:8px;background:#2b6cb0;color:#fff;border:none;border-radius:12px;padding:3px 10px;font-size:10px;cursor:pointer;font-weight:700;">💾 儲存</button>
     <button onclick="clearHistory()" style="margin-left:4px;background:#742a2a;color:#fc8181;border:none;border-radius:12px;padding:3px 8px;font-size:10px;cursor:pointer;">🗑️</button>
   </div>
+
   <div class="periods">
     <button class="pbtn active" onclick="setPeriod('1W',this)">1週</button>
     <button class="pbtn" onclick="setPeriod('1M',this)">1月</button>
@@ -231,18 +253,21 @@ td:first-child,td:nth-child(2){text-align:left;}
     <button class="pbtn" onclick="setPeriod('6M',this)">半年</button>
     <button class="pbtn" onclick="setPeriod('ALL',this)">全部</button>
   </div>
+
   <div class="cards2" style="margin-bottom:10px">
     <div class="card"><div class="cl">📊 期間損益</div><div class="cv" id="h-pnl">—</div><div class="cs" id="h-pnl-sub">—</div></div>
     <div class="card"><div class="cl">📈 期間報酬率</div><div class="cv" id="h-ret">—</div><div class="cs" id="h-ret-sub">—</div></div>
     <div class="card"><div class="cl">📅 起始日期</div><div class="cv cb" id="h-start" style="font-size:13px">—</div><div class="cs" id="h-start-sub">—</div></div>
     <div class="card"><div class="cl">🗂️ 紀錄筆數</div><div class="cv cb" id="h-count">0</div><div class="cs">自動儲存</div></div>
   </div>
+
   <div style="background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:12px;position:relative;min-height:200px">
     <div id="noDataMsg" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#4a5568;font-size:12px;text-align:center">
       📭 尚無歷史紀錄<br><small style="font-size:10px">更新股價後點擊「💾 儲存」</small>
     </div>
     <canvas id="histChart" style="display:none;max-height:200px"></canvas>
   </div>
+
   <div style="margin-top:10px" id="snapList"></div>
 </div>
 
@@ -254,6 +279,7 @@ td:first-child,td:nth-child(2){text-align:left;}
     <div class="card"><div class="cl">📅 年利息</div><div class="cv co">95.7萬</div><div class="cs">五筆金融貸款</div></div>
     <div class="card"><div class="cl">🎯 平均利率</div><div class="cv cy">~2.2%</div><div class="cs">低成本槓桿</div></div>
   </div>
+
   <div class="st">💳 還款優先順序（雪崩法）</div>
   <div class="dcard rr">
     <div class="dcard-top"><span class="dcard-name">台新信貸</span><span class="dcard-badge br2">🔴 最優先</span></div>
@@ -265,6 +291,7 @@ td:first-child,td:nth-child(2){text-align:left;}
     </div>
     <div class="dcard-note">每月額外撥薪資10萬加速清償，退休前壓低至200萬以下</div>
   </div>
+
   <div class="dcard ro">
     <div class="dcard-top"><span class="dcard-name">富邦信貸</span><span class="dcard-badge bo2">🟠 第二</span></div>
     <div class="dcard-row">
@@ -275,6 +302,7 @@ td:first-child,td:nth-child(2){text-align:left;}
     </div>
     <div class="dcard-note">台新還清後全力清富邦</div>
   </div>
+
   <div class="dcard rb">
     <div class="dcard-top"><span class="dcard-name">安泰信貸</span><span class="dcard-badge by2">🟡 第三</span></div>
     <div class="dcard-row">
@@ -285,6 +313,7 @@ td:first-child,td:nth-child(2){text-align:left;}
     </div>
     <div class="dcard-note">利率最低，正常攤還即可</div>
   </div>
+
   <div class="dcard ra">
     <div class="dcard-top"><span class="dcard-name">匯豐房貸</span><span class="dcard-badge bb2">🔵 長期</span></div>
     <div class="dcard-row">
@@ -295,6 +324,7 @@ td:first-child,td:nth-child(2){text-align:left;}
     </div>
     <div class="dcard-note">有實體資產對應，正常攤還</div>
   </div>
+
   <div class="dcard ro">
     <div class="dcard-top"><span class="dcard-name">股票質押</span><span class="dcard-badge bo2">⚙️ 彈性</span></div>
     <div class="dcard-row">
@@ -305,6 +335,7 @@ td:first-child,td:nth-child(2){text-align:left;}
     </div>
     <div class="dcard-note">退休前目標降至1,200萬，月息降至2.2萬</div>
   </div>
+
   <div class="dcard rg">
     <div class="dcard-top"><span class="dcard-name">親人借貸</span><span class="dcard-badge bg2">✅ 最後</span></div>
     <div class="dcard-row">
@@ -325,6 +356,7 @@ td:first-child,td:nth-child(2){text-align:left;}
     <div class="card"><div class="cl">🔄 年套利淨收</div><div class="cv cg">~266萬</div><div class="cs">配息362−利息96</div></div>
     <div class="card"><div class="cl">📈 債券月配息</div><div class="cv cg">30.0萬</div><div class="cs">五檔債券ETF</div></div>
   </div>
+
   <div class="st">📊 月現金流明細</div>
   <div class="tbl-wrap"><table>
     <tr><th style="text-align:left">項目</th><th>月金額</th></tr>
@@ -335,6 +367,7 @@ td:first-child,td:nth-child(2){text-align:left;}
     <tr class="rr"><td>❌ 股票質押利息</td><td class="r">−4.5萬</td></tr>
     <tr class="tot"><td>📌 月淨現金流</td><td class="g">+28.3萬</td></tr>
   </table></div>
+
   <div class="st">📅 債券ETF配息</div>
   <div class="tbl-wrap"><table>
     <tr><th style="text-align:left">ETF</th><th>年化殖利率</th><th>月配息</th></tr>
@@ -355,6 +388,7 @@ td:first-child,td:nth-child(2){text-align:left;}
     <div class="retire-box"><div class="rn">3,000萬</div><div class="rs">目標淨資產<br>（現1,801萬）</div></div>
     <div class="retire-box"><div class="rn">50%</div><div class="rs">目標負債比<br>（現73.3%）</div></div>
   </div>
+
   <div class="st">✅ 退休可行性</div>
   <div class="tbl-wrap"><table>
     <tr><th style="text-align:left">指標</th><th>目標</th><th>現況</th><th>3年後</th></tr>
@@ -363,53 +397,21 @@ td:first-child,td:nth-child(2){text-align:left;}
     <tr class="ry"><td>負債比率</td><td>≤50%</td><td class="r">73.3%</td><td class="o">~58%</td></tr>
     <tr class="rg"><td>質押月利息</td><td>≤2.5萬</td><td class="r">4.5萬</td><td class="g">~2.2萬</td></tr>
   </table></div>
-  <div class="st">🗓️ 3年路線圖</div>
-  <div class="dcard rg">
-    <div class="dcard-top"><span class="dcard-name">Year 1 — 2026</span><span class="dcard-badge bg2">建立基礎</span></div>
-    <div class="dcard-note" style="margin-top:6px">① 儲存60–80萬緊急備用金<br>② 每月額外10萬還台新信貸<br>③ 出清00771轉入00720B<br>④ 短線CPO/記憶體目標+50~100萬</div>
-  </div>
-  <div class="dcard rb">
-    <div class="dcard-top"><span class="dcard-name">Year 2 — 2027</span><span class="dcard-badge bb2">加速清債</span></div>
-    <div class="dcard-note" style="margin-top:6px">① 台新餘額降至~350萬<br>② 質押從2,428萬降至1,500萬<br>③ 006208定期定額每月3–5萬<br>④ 長線CPO佈局~200萬</div>
-  </div>
-  <div class="dcard ro">
-    <div class="dcard-top"><span class="dcard-name">Year 3 — 2028–2029</span><span class="dcard-badge bo2">達成退休</span></div>
-    <div class="dcard-note" style="margin-top:6px">① 台新攤還至200萬以下<br>② 補強重疾險/長照險<br>③ 質押降至1,200萬，月息2.2萬<br>④ 正式提交退休申請 🎉</div>
-  </div>
-  <div class="ins">🏖️ 月配息30.5萬已超過退休所需！再用3年薪資加速清債降槓桿，退休後月淨現金流可達 <strong>23–25萬</strong>，加上勞保勞退2–4萬，生活優渥。</div>
+
+  <div class="ins">🏖️ 月配息30.5萬已超過退休所需！再用3年薪資加速清債降槓桿，退休後月淨現金流可達 <strong>23–25萬</strong>。</div>
 </div>
 
 <!-- ══ 風險 ══ -->
 <div id="sec-ri" class="section">
   <div class="ritem rr">
     <div class="rico">🔴</div>
-    <div><div class="rit-title">美伊戰爭 → 利率反轉</div><div class="rit-body">油價持高→通膨→聯準會延後降息，00687B持續承壓（−77.4萬/−4.0%）。10年美債殖利率 &gt;4.8% 為警戒線。</div></div>
+    <div><div class="rit-title">美伊戰爭 → 利率反轉</div><div class="rit-body">油價持高→通膨→聯準會延後降息，00687B持續承壓。10年美債殖利率 &gt;4.8% 為警戒線。</div></div>
   </div>
   <div class="ritem ro">
     <div class="rico">🟠</div>
-    <div><div class="rit-title">退休後信貸壓力</div><div class="rit-body">退休失去薪資22萬，台新月攤還7.7萬是最大現金流威脅。每月額外10萬加速清償最重要。</div></div>
+    <div><div class="rit-title">退休後信貸壓力</div><div class="rit-body">退休失去薪資22萬，台新月攤還7.7萬是最大現金流威脅。</div></div>
   </div>
-  <div class="ritem ro">
-    <div class="rico">🟠</div>
-    <div><div class="rit-title">00771 虧損 −14.5%</div><div class="rit-body">收盤16.29，成本19.06，帳虧−8萬。趨勢偏弱，逢反彈出清轉入00720B。</div></div>
-  </div>
-  <div class="ritem ry">
-    <div class="rico">🟡</div>
-    <div><div class="rit-title">00772B 小虧 −3.4%</div><div class="rit-body">AA/AAA評級無信用風險，純利率風險。設停損29元，降息後可回升。</div></div>
-  </div>
-  <div class="ritem ry">
-    <div class="rico">🟡</div>
-    <div><div class="rit-title">健康/長照風險</div><div class="rit-body">退休前補強重疾險、長照險，確保緊急備用金≥60萬現金。</div></div>
-  </div>
-  <div class="st">📅 關鍵事件</div>
-  <div class="tbl-wrap"><table>
-    <tr><th style="text-align:left">時間</th><th style="text-align:left">事件</th><th>優先</th></tr>
-    <tr class="rr"><td>本週</td><td>美伊談判/油價</td><td class="r">🔴最高</td></tr>
-    <tr class="ro"><td>3月中</td><td>FOMC利率決議</td><td class="r">🔴最高</td></tr>
-    <tr class="rb"><td>3/18</td><td>00937B除息</td><td class="y">🟡中</td></tr>
-    <tr class="ra"><td>4月</td><td>Q1財報：2347/2834</td><td class="o">🟠高</td></tr>
-    <tr class="rb"><td>持續</td><td>10年美債殖利率</td><td class="o">🟠高</td></tr>
-  </table></div>
+
   <div class="note">⚠️ 本報告為AI輔助分析，不構成正式投資建議，重大決策請諮詢專業顧問。</div>
 </div>
 
@@ -434,30 +436,38 @@ td:first-child,td:nth-child(2){text-align:left;}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-/** ✅ Worker Quote API */
+/** Worker Quote API */
 const QUOTE_API = 'https://air904.air904.workers.dev/quotes';
 
-const HOLDINGS = [
-  {sym:'00687B', name:'國泰20年美債',    g:'bond', shares:640000,  cost:30.24, base:29.03},
-  {sym:'00720B', name:'元大投資級公司債', g:'bond', shares:650000,  cost:33.87, base:33.82},
-  {sym:'00953B', name:'群益優選非投等債', g:'bond', shares:1935000, cost:9.59,  base:9.71},
-  {sym:'00937B', name:'群益ESG投等債20+', g:'bond', shares:155000,  cost:14.83, base:15.16},
-  {sym:'00772B', name:'中信高評級公司債', g:'bond', shares:65000,   cost:35.69, base:34.50},
-  {sym:'006208', name:'富邦台50',         g:'etf',  shares:5106,    cost:121.90,base:178.20},
-  {sym:'0050',   name:'元大台灣50',       g:'etf',  shares:5246,    cost:51.39, base:76.85},
-  {sym:'00878',  name:'國泰永續高股息',   g:'etf',  shares:10000,   cost:18.29, base:22.39},
-  {sym:'0056',   name:'元大高股息',       g:'etf',  shares:5000,    cost:32.23, base:38.63},
-  {sym:'00882',  name:'中信中國高股息',   g:'etf',  shares:25000,   cost:13.34, base:16.05},
-  {sym:'00771',  name:'元大US高息特別股', g:'etf',  shares:29000,   cost:19.06, base:16.29},
-  {sym:'2834',   name:'臺企銀',           g:'stk',  shares:35509,   cost:13.43, base:15.45},
-  {sym:'2347',   name:'聯強',             g:'stk',  shares:5000,    cost:70.00, base:70.50},
-  {sym:'2838',   name:'聯邦銀',           g:'stk',  shares:1000,    cost:14.08, base:19.75},
-  {sym:'2889',   name:'國票金',           g:'stk',  shares:420,     cost:12.32, base:15.85},
-];
+// Snapshots
+const STORAGE_KEY='portfolio-snapshots-v3';
+const SETTLE_KEY='portfolio-settle-date-v1';
 
-const DEBT=4946, PLEDGE=2428;
-const STORAGE_KEY='portfolio-snapshots-v2';
+// Auto-refresh settings
+const AUTO_KEY='portfolio-auto-refresh-v2';
+const AUTO_MIN_KEY='portfolio-auto-refresh-min-v2';
+
+// Auto-refresh runtime
+let autoEnabled=false;
+let autoMinutes=5;
+let isFetching=false;
+let autoFetchTimer=null;   // setTimeout handler
+let countdownTimer=null;   // setInterval (1s)
+let probeTimer=null;       // when not REGULAR: low-frequency probe
+let nextRefreshAt=null;    // ms timestamp
+let lastMarketState=null;  // portfolio state
+
+// Chart/history
 let chartInst=null, currentPeriod='1W', lastKnownVal=null;
+
+// Consts
+const DEBT=4946, PLEDGE=2428;
+
+const fmt=(n,d=1)=>n.toFixed(d);
+const fmtPnl=n=>(n>=0?'＋':'')+fmt(n)+'萬';
+const fmtPct=n=>(n>=0?'＋':'')+fmt(n,2)+'%';
+function setEl(id,txt,cls){const e=document.getElementById(id);if(!e)return;e.textContent=txt;if(cls)e.className=cls;}
+function todayStr(){return new Date().toISOString().split('T')[0];}
 
 // ── nav ──
 function showSec(id, el){
@@ -468,21 +478,49 @@ function showSec(id, el){
   window.scrollTo(0,0);
 }
 
-// ── helpers ──
-const fmt=(n,d=1)=>n.toFixed(d);
-const fmtPnl=n=>(n>=0?'＋':'')+fmt(n)+'萬';
-const fmtPct=n=>(n>=0?'＋':'')+fmt(n,2)+'%';
-function setEl(id,txt,cls){const e=document.getElementById(id);if(!e)return;e.textContent=txt;if(cls)e.className=cls;}
+// ── market state helpers ──
+function normalizeMarketState(s){
+  if(!s) return null;
+  return String(s).toUpperCase();
+}
+function marketStateLabel(s){
+  s = normalizeMarketState(s);
+  if(!s) return '未知';
+  if(s === 'REGULAR') return '盤中';
+  if(s === 'CLOSED') return '收盤';
+  if(s === 'POST') return '盤後';
+  if(s === 'PRE') return '盤前';
+  return s;
+}
+function pickPortfolioMarketState(marketStates){
+  const set = new Set((marketStates||[]).map(normalizeMarketState).filter(Boolean));
+  if(set.has('REGULAR')) return 'REGULAR';
+  if(set.has('POST')) return 'POST';
+  if(set.has('PRE')) return 'PRE';
+  if(set.has('CLOSED')) return 'CLOSED';
+  for(const v of set) return v;
+  return null;
+}
+function setMarketMini(state){
+  const el=document.getElementById('marketMini');
+  if(!el) return;
+  el.innerHTML = `狀態：<b>${marketStateLabel(state)}</b>`;
+}
+function setNextMiniText(txt){
+  const el=document.getElementById('nextMini');
+  if(!el) return;
+  el.innerHTML = `下次更新：<b>${txt}</b>`;
+}
 
-// ✅ batch quotes from Worker
+// ── Worker quotes ──
 async function fetchQuotesBatch(symbols){
   const u = `${QUOTE_API}?symbols=${encodeURIComponent(symbols.join(','))}`;
   const r = await fetch(u, { headers: { 'Accept': 'application/json' } });
   if(!r.ok) throw new Error('報價服務錯誤：'+r.status);
-  return await r.json(); // {ts, got, total, missing, data:{sym:{price,prevClose,marketState}}}
+  return await r.json();
 }
 
-// ── render holding cards ──
+// ── holdings render ──
 function renderHoldingCards(prices, prevCloses){
   ['bond','etf','stk'].forEach(g=>{
     const container=document.getElementById(g==='bond'?'bondCards':g==='etf'?'etfCards':'stkCards');
@@ -498,7 +536,6 @@ function renderHoldingCards(prices, prevCloses){
       const pnl = curVal - costVal;
       const pnlPct = pnl / costVal * 100;
 
-      // ✅ day PnL vs prevClose (fallback to base)
       const pc = (prevCloses && prevCloses[h.sym]!=null) ? prevCloses[h.sym] : h.base;
       const dayPnl = (p!=null) ? (h.shares*(p - pc)/10000) : null;
 
@@ -528,13 +565,12 @@ function renderHoldingCards(prices, prevCloses){
   });
 }
 
-// ── update dashboard ──
 function updateDashboard(prices, prevCloses={}){
   let totCur=0, totCost=0, totPrev=0;
 
   HOLDINGS.forEach(h=>{
     const p = prices ? prices[h.sym] : null;
-    const cur = (p ?? h.base); // ✅ no price -> use base so total doesn't shrink
+    const cur = (p ?? h.base);
     const pc  = (prevCloses[h.sym] ?? h.base);
 
     totCost += h.shares*h.cost/10000;
@@ -558,7 +594,6 @@ function updateDashboard(prices, prevCloses={}){
   const pcCls = pnl>=0?'cg':'cr';
   const dcCls = dayPnl>=0?'cg':'cr';
 
-  // 總覽
   setEl('ov-val',fmt(totCur)+'萬','cv cy'); setEl('ov-sub','最新報價');
   setEl('ov-net',fmt(net)+'萬','cv '+(net>=0?'co':'cr'));
   setEl('ov-dr',fmt(dr)+'%','cv cr');
@@ -570,12 +605,10 @@ function updateDashboard(prices, prevCloses={}){
   const pf=document.getElementById('pb-net-fill');
   if(pf)pf.style.width=Math.max(0,net/totCur*100)+'%';
 
-  // 損益tab
   setEl('p-val',fmt(totCur)+'萬','cv cy'); setEl('p-sub','最新報價');
   setEl('p-pnl',fmtPnl(pnl)+'('+fmtPct(pnlPct)+')','cv '+pcCls);
   setEl('p-day',fmtPnl(dayPnl)+'('+fmtPct(dayPct)+')','cv '+dcCls);
 
-  // 頂部day bar
   const db=document.getElementById('dayBar'); if(db)db.style.display='block';
   const now=new Date();
   setEl('dTime',now.getHours()+':'+String(now.getMinutes()).padStart(2,'0'),'val cgr');
@@ -584,25 +617,30 @@ function updateDashboard(prices, prevCloses={}){
   setEl('dPct',fmtPct(dayPct),'val '+dcCls);
   setEl('dNet',fmt(net)+'萬','val '+(net>=0?'co':'cr'));
 
-  // 持股卡片
   renderHoldingCards(prices, prevCloses);
 }
 
-// ── 歷史快照 ──
+// ── snapshots ──
 function loadSnaps(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');}catch(e){return [];}}
 function saveSnaps(a){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(a));}catch(e){}}
-function saveSnapshot(auto=false){
+function saveSnapshot(auto=false, settle=false){
   if(!lastKnownVal){if(!auto)alert('請先點擊「更新」取得最新數據');return;}
-  const snaps=loadSnaps(), today=new Date().toISOString().split('T')[0];
+  const snaps=loadSnaps(), today=todayStr();
   const idx=snaps.findIndex(s=>s.date===today);
-  const entry={date:today,val:Math.round(lastKnownVal*10)/10,ts:Date.now()};
-  if(idx>=0)snaps[idx]=entry; else snaps.push(entry);
+  const entry={date:today,val:Math.round(lastKnownVal*10)/10,ts:Date.now(), settle: !!settle};
+
+  if(idx>=0){
+    entry.settle = entry.settle || !!snaps[idx].settle;
+    snaps[idx]=entry;
+  }else snaps.push(entry);
+
   snaps.sort((a,b)=>a.date.localeCompare(b.date));
   saveSnaps(snaps);
   renderHistChart();
   if(!auto)alert('✅ 已儲存 '+today+' 快照！');
 }
 function clearHistory(){if(!confirm('確定清除所有歷史紀錄？'))return;localStorage.removeItem(STORAGE_KEY);renderHistChart();}
+
 function setPeriod(p,el){
   currentPeriod=p;
   document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('active'));
@@ -624,11 +662,13 @@ function renderHistChart(){
   const noMsg=document.getElementById('noDataMsg'), canvas=document.getElementById('histChart');
   setEl('h-count',all.length,'cv cb');
   renderSnapList(all);
+
   if(snaps.length<1){
     noMsg.style.display='block';canvas.style.display='none';
     ['h-pnl','h-ret','h-start'].forEach(id=>setEl(id,'—'));
     return;
   }
+
   noMsg.style.display='none'; canvas.style.display='block';
   const first=snaps[0], last=snaps[snaps.length-1];
   const pnl=last.val-first.val, ret=pnl/first.val*100, pc=pnl>=0?'cg':'cr';
@@ -637,14 +677,14 @@ function renderHistChart(){
   setEl('h-pnl-sub','起始 '+first.val+'萬');
   setEl('h-ret',(ret>=0?'＋':'')+ret.toFixed(2)+'%','cv '+pc);
   setEl('h-ret-sub','最高 '+Math.max(...snaps.map(s=>s.val)).toFixed(1)+'萬');
+
   const labels=snaps.map(s=>s.date.slice(5)), vals=snaps.map(s=>s.val);
-  const minV=Math.min(...vals), maxV=Math.max(...vals), pad=(maxV-minV)*0.15||5;
   const lc=pnl>=0?'#68d391':'#fc8181', fc=pnl>=0?'rgba(104,211,145,0.12)':'rgba(252,129,129,0.12)';
   if(chartInst){chartInst.destroy();chartInst=null;}
   chartInst=new Chart(canvas.getContext('2d'),{
     type:'line',
     data:{labels,datasets:[{label:'資產（萬）',data:vals,borderColor:lc,backgroundColor:fc,borderWidth:2.5,pointRadius:snaps.length>30?2:4,pointBackgroundColor:lc,fill:true,tension:0.35}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#252d3f',borderColor:'#4a5568',borderWidth:1,titleColor:'#a0aec0',bodyColor:'#f6e05e',callbacks:{label:c=>'現值：'+c.raw+'萬',afterLabel:c=>{const d=c.raw-first.val;return '較起始：'+(d>=0?'+':'')+d.toFixed(1)+'萬';}}}},scales:{x:{grid:{color:'#1a2030'},ticks:{color:'#718096',font:{size:9},maxTicksLimit:8}},y:{min:minV-pad,max:maxV+pad,grid:{color:'#1a2030'},ticks:{color:'#718096',font:{size:9},callback:v=>v.toFixed(0)+'萬'}}}}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
   });
 }
 function renderSnapList(snaps){
@@ -654,17 +694,168 @@ function renderSnapList(snaps){
   el.innerHTML='<div class="st">🗂️ 最近紀錄</div>'+r.map((s,i)=>{
     const prev=r[i+1],diff=prev?s.val-prev.val:null;
     const c=diff===null?'#a0aec0':diff>=0?'#68d391':'#fc8181';
-    return `<div class="snap-row"><span style="color:#a0aec0">${s.date}</span><span style="color:#f6e05e">${s.val}萬</span><span style="color:${c}">${diff===null?'—':(diff>=0?'＋':'')+diff.toFixed(1)+'萬'}</span></div>`;
+    const settleTag = s.settle ? ' <span style="color:#68d391;font-weight:800">✅結算</span>' : '';
+    return `<div class="snap-row">
+      <span style="color:#a0aec0">${s.date}${settleTag}</span>
+      <span style="color:#f6e05e">${s.val}萬</span>
+      <span style="color:${c}">${diff===null?'—':(diff>=0?'＋':'')+diff.toFixed(1)+'萬'}</span>
+    </div>`;
   }).join('');
 }
 
-// ── 報價（改走 Worker） ──
-async function fetchLatestPrices(){
+// ── settle snapshot (once per day after CLOSED) ──
+function maybeSettleSnapshot(state){
+  const s = normalizeMarketState(state);
+  if(s !== 'CLOSED') return;
+
+  const today = todayStr();
+  const last = localStorage.getItem(SETTLE_KEY);
+  if(last === today) return;
+
+  saveSnapshot(true, true);
+  localStorage.setItem(SETTLE_KEY, today);
+}
+
+// ── Auto-refresh UI ──
+function loadAutoSettings(){
+  autoEnabled = (localStorage.getItem(AUTO_KEY) === '1');
+  const m = parseInt(localStorage.getItem(AUTO_MIN_KEY) || '5', 10);
+  autoMinutes = (isFinite(m) && m>=1 && m<=120) ? m : 5;
+}
+function saveAutoSettings(){
+  localStorage.setItem(AUTO_KEY, autoEnabled ? '1' : '0');
+  localStorage.setItem(AUTO_MIN_KEY, String(autoMinutes));
+}
+function updateAutoBtn(){
+  const t=document.getElementById('autoText');
+  const i=document.getElementById('autoIcon');
+  if(!t||!i) return;
+  if(autoEnabled){
+    t.textContent = `自動：開(${autoMinutes}分)`;
+    i.textContent = '✅';
+  }else{
+    t.textContent = '自動：關';
+    i.textContent = '⏱';
+  }
+}
+
+// ── Countdown ──
+function fmtMMSS(ms){
+  const s = Math.max(0, Math.floor(ms/1000));
+  const mm = String(Math.floor(s/60)).padStart(2,'0');
+  const ss = String(s%60).padStart(2,'0');
+  return `${mm}:${ss}`;
+}
+function startCountdown(){
+  stopCountdown();
+  countdownTimer = setInterval(()=>{
+    // 盤中且有 nextRefreshAt 才倒數
+    if(autoEnabled && normalizeMarketState(lastMarketState)==='REGULAR' && nextRefreshAt){
+      const left = nextRefreshAt - Date.now();
+      if(left > 0) setNextMiniText(fmtMMSS(left));
+      else setNextMiniText('即將更新…');
+    }else{
+      // 非盤中：顯示等待（不倒數）
+      setNextMiniText(autoEnabled ? '等待開盤' : '—');
+    }
+  }, 1000);
+}
+function stopCountdown(){
+  if(countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}
+}
+
+// ── Auto scheduling logic ──
+function clearTimers(){
+  if(autoFetchTimer){ clearTimeout(autoFetchTimer); autoFetchTimer=null; }
+  if(probeTimer){ clearInterval(probeTimer); probeTimer=null; }
+}
+function scheduleNextFetch(delayMs){
+  clearTimeout(autoFetchTimer);
+  nextRefreshAt = Date.now() + delayMs;
+  autoFetchTimer = setTimeout(()=>fetchLatestPrices(true), delayMs);
+}
+function startProbeWhenNotRegular(){
+  // 盤外：每 15 分鐘探一次（只為了等開盤自動恢復）
+  if(probeTimer) return;
+  probeTimer = setInterval(()=>{
+    if(!autoEnabled || isFetching) return;
+    fetchLatestPrices(true);
+  }, 15 * 60 * 1000);
+}
+function stopProbe(){
+  if(probeTimer){ clearInterval(probeTimer); probeTimer=null; }
+}
+function onMarketStateUpdate(state){
+  lastMarketState = state;
+  setMarketMini(state);
+
+  // ✅ 升級：自動更新只在 REGULAR
+  if(!autoEnabled) return;
+
+  if(normalizeMarketState(state) === 'REGULAR'){
+    stopProbe();
+    // 若沒有排程，立刻排一個
+    if(!autoFetchTimer){
+      scheduleNextFetch(autoMinutes * 60 * 1000);
+    }
+  }else{
+    // 非盤中：停掉定期更新，改成低頻探測
+    if(autoFetchTimer){ clearTimeout(autoFetchTimer); autoFetchTimer=null; }
+    nextRefreshAt = null;
+    startProbeWhenNotRegular();
+  }
+}
+
+// ── Toggle auto ──
+function toggleAutoRefresh(){
+  autoEnabled = !autoEnabled;
+
+  if(autoEnabled){
+    const input = prompt('自動更新間隔（分鐘，1~120）', String(autoMinutes));
+    if(input === null){
+      autoEnabled = false;
+    }else{
+      const m = parseInt(input,10);
+      if(!isFinite(m) || m<1 || m>120){
+        alert('請輸入 1 ~ 120 的整數分鐘');
+        autoEnabled = false;
+      }else{
+        autoMinutes = m;
+      }
+    }
+  }
+
+  saveAutoSettings();
+  updateAutoBtn();
+
+  clearTimers();
+  nextRefreshAt = null;
+
+  if(autoEnabled){
+    startCountdown();
+    // 先立刻更新一次，拿到 state 後自動決定是否啟動盤中排程 / 盤外探測
+    if(!isFetching) fetchLatestPrices(true);
+  }else{
+    stopCountdown();
+    stopProbe();
+    setNextMiniText('—');
+  }
+}
+
+// ── Price update main ──
+async function fetchLatestPrices(autoCall){
+  if(isFetching) return;
+  isFetching = true;
+
   const btn=document.getElementById('refreshBtn'), icon=document.getElementById('refreshIcon');
   const overlay=document.getElementById('loadingOverlay');
   const msgEl=document.getElementById('loadingMsg'), detEl=document.getElementById('loadingDetail');
-  btn.disabled=true; icon.textContent='⏳'; icon.className='spin'; overlay.classList.add('show');
-  const setMsg=(m,d)=>{msgEl.textContent=m;if(d!=null)detEl.textContent=d;};
+
+  if(btn) btn.disabled=true;
+  if(icon){ icon.textContent='⏳'; icon.className='spin'; }
+  if(overlay) overlay.classList.add('show');
+
+  const setMsg=(m,d)=>{ if(msgEl) msgEl.textContent=m; if(detEl && d!=null) detEl.textContent=d; };
 
   try{
     setMsg('查詢報價中...','air904.workers.dev');
@@ -674,10 +865,13 @@ async function fetchLatestPrices(){
 
     const prices = {};
     const prevCloses = {};
-    for (const s of syms){
+    const mstates = [];
+
+    for(const s of syms){
       const it = q.data?.[s];
       if(it?.price != null) prices[s] = it.price;
       if(it?.prevClose != null) prevCloses[s] = it.prevClose;
+      if(it?.marketState) mstates.push(it.marketState);
     }
 
     if(!Object.keys(prices).length) throw new Error('無法取得任何報價');
@@ -685,25 +879,126 @@ async function fetchLatestPrices(){
     setMsg('計算損益...','');
     updateDashboard(prices, prevCloses);
 
-    // 自動存快照
-    setTimeout(()=>saveSnapshot(true),300);
+    // Determine portfolio market state
+    const state = pickPortfolioMarketState(mstates);
+    onMarketStateUpdate(state);
+
+    // Save normal snapshot (always)
+    setTimeout(()=>saveSnapshot(true,false), 250);
+
+    // Settle snapshot (CLOSED, once/day)
+    maybeSettleSnapshot(state);
 
     const miss = q.missing || [];
     const now=new Date();
     const ts=now.toLocaleTimeString('zh-TW');
-    document.getElementById('priceStatus').textContent =
-      `✅ 已更新 ${q.got}/${q.total} 檔（Worker）｜${ts}` + (miss.length ? `｜未取得：${miss.join('、')}` : '');
+
+    const baseText = `✅ 已更新 ${q.got}/${q.total} 檔（Worker）｜${ts}`;
+    const stateText = `｜狀態：${marketStateLabel(state)}`;
+    const missText = miss.length ? `｜未取得：${miss.join('、')}` : '';
+
+    const ps = document.getElementById('priceStatus');
+    if(ps) ps.textContent = baseText + stateText + missText;
+
+    // If auto enabled and REGULAR: schedule next fetch
+    if(autoEnabled && normalizeMarketState(state)==='REGULAR'){
+      scheduleNextFetch(autoMinutes * 60 * 1000);
+    }
 
   }catch(err){
-    alert('更新失敗：'+err.message);
+    if(!autoCall) alert('更新失敗：'+err.message);
   }finally{
-    overlay.classList.remove('show');btn.disabled=false;icon.textContent='🔄';icon.className='';
+    if(overlay) overlay.classList.remove('show');
+    if(btn) btn.disabled=false;
+    if(icon){ icon.textContent='🔄'; icon.className=''; }
+    isFetching = false;
   }
 }
 
-// 初始化
-renderHoldingCards(null, null);
-renderHistChart();
+// ── init ──
+function renderHoldingCards(prices, prevCloses){} // placeholder overwritten below
+
+// Overwrite placeholder with actual function (kept minimal)
+renderHoldingCards = function(prices, prevCloses){
+  ['bond','etf','stk'].forEach(g=>{
+    const container=document.getElementById(g==='bond'?'bondCards':g==='etf'?'etfCards':'stkCards');
+    if(!container)return;
+    container.innerHTML='';
+    HOLDINGS.filter(h=>h.g===g).forEach(h=>{
+      const p = prices ? prices[h.sym] : null;
+      const costVal = h.shares*h.cost/10000;
+      const baseVal = h.shares*h.base/10000;
+      const curVal  = (p!=null) ? (h.shares*p/10000) : baseVal;
+      const pnl = curVal - costVal;
+      const pnlPct = pnl / costVal * 100;
+
+      const pc = (prevCloses && prevCloses[h.sym]!=null) ? prevCloses[h.sym] : h.base;
+      const dayPnl = (p!=null) ? (h.shares*(p - pc)/10000) : null;
+
+      const pcCls = pnl>=0?'cg':'cr';
+      const dpc = dayPnl!==null ? (dayPnl>=0?'g':'r') : 'cgr';
+      const priceDisp = (p!=null) ? p.toFixed(2) : '—';
+      const dayDisp = dayPnl!==null ? fmtPnl(dayPnl) : '—';
+
+      container.innerHTML+=`
+      <div class="hcard ${pnl>=0?'rg':'rr'}">
+        <div class="hcard-top">
+          <div><div class="hcard-sym">${h.sym}</div><div class="hcard-name">${h.name}</div></div>
+          <div class="hcard-right">
+            <div class="hcard-price ${pcCls}">${priceDisp}</div>
+            <div class="hcard-day ${dpc}">當日 ${dayDisp}</div>
+          </div>
+        </div>
+        <div class="hcard-bottom">
+          <div class="hcard-stat"><div class="lbl">股數</div><div class="val cgr">${(h.shares/10000).toFixed(1)}萬</div></div>
+          <div class="hcard-stat"><div class="lbl">成本</div><div class="val cgr">${h.cost}</div></div>
+          <div class="hcard-stat"><div class="lbl">損益</div><div class="val ${pcCls}">${fmtPnl(pnl)}</div></div>
+          <div class="hcard-stat"><div class="lbl">損益%</div><div class="val ${pcCls}">${fmtPct(pnlPct)}</div></div>
+        </div>
+      </div>`;
+    });
+  });
+};
+
+(function init(){
+  // init UI
+  setMarketMini(null);
+  setNextMiniText('—');
+
+  // history
+  renderHistChart();
+  renderHoldingCards(null,null);
+
+  // auto settings
+  loadAutoSettings();
+  updateAutoBtn();
+  if(autoEnabled){
+    startCountdown();
+    fetchLatestPrices(true);
+  }
+})();
 </script>
+
+<script>
+// holdings must be after script? keep near bottom for clarity
+const HOLDINGS = [
+  {sym:'00687B', name:'國泰20年美債',    g:'bond', shares:640000,  cost:30.24, base:29.03},
+  {sym:'00720B', name:'元大投資級公司債', g:'bond', shares:650000,  cost:33.87, base:33.82},
+  {sym:'00953B', name:'群益優選非投等債', g:'bond', shares:1935000, cost:9.59,  base:9.71},
+  {sym:'00937B', name:'群益ESG投等債20+', g:'bond', shares:155000,  cost:14.83, base:15.16},
+  {sym:'00772B', name:'中信高評級公司債', g:'bond', shares:65000,   cost:35.69, base:34.50},
+  {sym:'006208', name:'富邦台50',         g:'etf',  shares:5106,    cost:121.90,base:178.20},
+  {sym:'0050',   name:'元大台灣50',       g:'etf',  shares:5246,    cost:51.39, base:76.85},
+  {sym:'00878',  name:'國泰永續高股息',   g:'etf',  shares:10000,   cost:18.29, base:22.39},
+  {sym:'0056',   name:'元大高股息',       g:'etf',  shares:5000,    cost:32.23, base:38.63},
+  {sym:'00882',  name:'中信中國高股息',   g:'etf',  shares:25000,   cost:13.34, base:16.05},
+  {sym:'00771',  name:'元大US高息特別股', g:'etf',  shares:29000,   cost:19.06, base:16.29},
+  {sym:'2834',   name:'臺企銀',           g:'stk',  shares:35509,   cost:13.43, base:15.45},
+  {sym:'2347',   name:'聯強',             g:'stk',  shares:5000,    cost:70.00, base:70.50},
+  {sym:'2838',   name:'聯邦銀',           g:'stk',  shares:1000,    cost:14.08, base:19.75},
+  {sym:'2889',   name:'國票金',           g:'stk',  shares:420,     cost:12.32, base:15.85},
+];
+</script>
+
 </body>
 </html>
