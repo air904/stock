@@ -1,1210 +1,1142 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-<!-- PWA（可留） -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1a1f2e">
-<link rel="apple-touch-icon" href="/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投資策略分析報告 — 2026/03/23</title>
 <style>
-/* ✅ 全站「可調式放大」：用設定頁控制 --uiScale */
-:root { --uiScale: 1.30; } /* 預設 130% */
-body{
-  transform: scale(var(--uiScale));
-  transform-origin: top left;
-  width: calc(100% / var(--uiScale));
-  min-height: calc(100vh / var(--uiScale));
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+
+:root {
+  --bg: #080c12;
+  --bg2: #0d1520;
+  --bg3: #111c2e;
+  --bg4: #162236;
+  --border: #1e3050;
+  --border2: #243a5e;
+  --text: #c8d8f0;
+  --text2: #7a9bc4;
+  --text3: #4a6a94;
+  --green: #00e5a0;
+  --green2: #00b87d;
+  --green-bg: #001f15;
+  --red: #ff4d6d;
+  --red2: #cc2244;
+  --red-bg: #1a0010;
+  --yellow: #ffd166;
+  --yellow-bg: #1a1200;
+  --orange: #ff9a3c;
+  --orange-bg: #1a0e00;
+  --blue: #4da8ff;
+  --blue-bg: #001a33;
+  --cyan: #00d4ff;
+  --accent: #0066ff;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Noto Sans TC', sans-serif;
 }
 
-/* base */
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e2e8f0;font-size:21px;padding-bottom:220px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:16px;line-height:1.7;overflow-x:hidden;}
 
-/* Header ✅ 不 sticky（避免手機 transform + sticky bug） */
-.hdr{background:linear-gradient(135deg,#1a1f2e,#252d3f);padding:18px 20px 14px;position:relative;border-bottom:1px solid #2d3748;}
-.hdr-top{display:flex;justify-content:space-between;align-items:center;gap:10px;}
-.hdr h1{font-size:22px;color:#63b3ed;font-weight:700;line-height:1.2;}
-.hdr p{color:#718096;font-size:15px;margin-top:3px;}
-.btn-refresh{background:linear-gradient(135deg,#2b6cb0,#3182ce);color:#fff;border:none;border-radius:24px;padding:12px 18px;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;}
-.btn-refresh:disabled{background:#2d3748;color:#718096;}
-.spin{display:inline-block;animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* scanline overlay */
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,30,60,0.03) 2px,rgba(0,30,60,0.03) 4px);pointer-events:none;z-index:9999;}
 
-/* Day bar */
-.day-bar{display:none;background:#141820;padding:10px 16px;border-bottom:1px solid #2d3748;overflow-x:auto;}
-.day-bar-inner{display:flex;gap:20px;min-width:max-content;}
-.day-item .lbl{font-size:10px;color:#718096;}
-.day-item .val{font-size:15px;font-weight:900;margin-top:1px;}
+/* HEADER */
+.header{background:linear-gradient(135deg,#040a14,#0a1828);border-bottom:1px solid var(--border2);padding:0;position:sticky;top:0;z-index:100;}
+.header-top{padding:14px 20px 10px;display:flex;justify-content:space-between;align-items:flex-start;}
+.header-title{font-family:var(--mono);font-size:13px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.header-main{font-size:24px;font-weight:900;color:var(--cyan);letter-spacing:-0.5px;}
+.header-main span{color:var(--blue);}
+.header-meta{text-align:right;font-family:var(--mono);font-size:12px;color:var(--text3);line-height:1.8;}
+.header-meta .live{color:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 
-/* Alert & status */
-.alert{background:#742a2a;border-left:3px solid #fc8181;padding:8px 14px;margin:10px 12px;border-radius:4px;font-size:11px;color:#fed7d7;line-height:1.6;}
-.status{padding:8px 16px;font-size:11px;color:#a0aec0;border-bottom:1px solid #1a2030;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;}
-.badge{font-size:10px;padding:2px 10px;border-radius:999px;font-weight:900;border:1px solid #2d3748;}
-.bgG{background:#0d1f12;color:#68d391;}
-.bgR{background:#2a1212;color:#fc8181;}
-.bgB{background:#1a365d;color:#63b3ed;}
-.bgY{background:#2d2a00;color:#f6e05e;}
+/* ALERT BAR */
+.alert-bar{background:linear-gradient(90deg,#2a0015,#1a0010,#2a0015);border-top:1px solid var(--red2);border-bottom:1px solid var(--red2);padding:10px 20px;font-size:14px;color:#ffb3c1;display:flex;align-items:center;gap:8px;}
+.alert-dot{width:7px;height:7px;background:var(--red);border-radius:50%;flex-shrink:0;animation:pulse 1s infinite;}
 
-/* Bottom nav */
-.bnav{position:fixed;bottom:0;left:0;right:0;background:#1a1f2e;border-top:1px solid #2d3748;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
-.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 2px 6px;cursor:pointer;color:#718096;font-size:11px;gap:3px;border:none;background:none;transition:color 0.2s;}
-.bnav-item.active{color:#63b3ed;}
-.bnav-item .ico{font-size:20px;line-height:1;}
+/* MACRO BAR */
+.macro-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;gap:20px;overflow-x:auto;font-family:var(--mono);}
+.macro-item{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;}
+.macro-label{font-size:11px;color:var(--text3);letter-spacing:1px;}
+.macro-val{font-size:14px;font-weight:700;}
+.macro-chg{font-size:11px;}
+.up{color:var(--green);}
+.dn{color:var(--red);}
+.neu{color:var(--yellow);}
 
-/* Sections */
-.section{display:none;padding:12px 14px;}
-.section.active{display:block;}
+/* TABS */
+.tabs{background:var(--bg2);border-bottom:2px solid var(--border);display:flex;overflow-x:auto;padding:0 16px;}
+.tab{padding:13px 16px;cursor:pointer;font-size:13px;font-weight:700;letter-spacing:0.5px;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all 0.2s;font-family:var(--mono);}
+.tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+.tab:hover:not(.active){color:var(--text);}
 
-/* Cards */
-.cards2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-.cards4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px;}
-.card{background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:11px 10px;}
-.card .cl{color:#718096;font-size:10px;margin-bottom:2px;}
-.card .cv{font-size:18px;font-weight:900;line-height:1.15;}
-.card .cs{font-size:10px;color:#718096;margin-top:3px;line-height:1.4;}
-.cy{color:#f6e05e;}.cg{color:#68d391;}.cr{color:#fc8181;}.cb{color:#63b3ed;}.co{color:#f6ad55;}.cgr{color:#a0aec0;}
-.g{color:#68d391;}.r{color:#fc8181;}.y{color:#f6e05e;}.o{color:#f6ad55;}.gr{color:#718096;}
+/* CONTENT */
+.content{display:none;padding:16px 16px 32px;}
+.content.active{display:block;}
 
-/* Titles */
-.st{font-size:11px;font-weight:900;color:#a0aec0;margin:14px 0 7px;text-transform:uppercase;letter-spacing:0.8px;display:flex;align-items:center;gap:6px;}
-.st::after{content:'';flex:1;height:1px;background:#2d3748;}
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.kpi{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;}
+.kpi.green::before{background:var(--green);}
+.kpi.red::before{background:var(--red);}
+.kpi.yellow::before{background:var(--yellow);}
+.kpi.blue::before{background:var(--blue);}
+.kpi.orange::before{background:var(--orange);}
+.kpi-label{font-size:11px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;font-family:var(--mono);margin-bottom:5px;}
+.kpi-val{font-size:26px;font-weight:900;font-family:var(--mono);letter-spacing:-1px;}
+.kpi-val.g{color:var(--green);}
+.kpi-val.r{color:var(--red);}
+.kpi-val.y{color:var(--yellow);}
+.kpi-val.b{color:var(--blue);}
+.kpi-val.o{color:var(--orange);}
+.kpi-sub{font-size:12px;color:var(--text3);margin-top:4px;line-height:1.5;}
 
-/* Holding card */
-.hcard{background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:11px 13px;margin-bottom:8px;}
-.hcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
-.hcard-sym{font-size:14px;font-weight:900;color:#63b3ed;}
-.hcard-name{font-size:11px;color:#718096;margin-top:2px;}
-.hcard-right{text-align:right;}
-.hcard-price{font-size:17px;font-weight:900;}
-.hcard-day{font-size:11px;margin-top:3px;}
-.hcard-bottom{display:flex;gap:14px;margin-top:8px;padding-top:8px;border-top:1px solid #2d3748;flex-wrap:wrap;}
-.hcard-stat .lbl{font-size:10px;color:#718096;}
-.hcard-stat .val{font-size:13px;font-weight:900;margin-top:1px;}
+/* SECTION TITLE */
+.sec{font-family:var(--mono);font-size:12px;color:var(--text3);letter-spacing:3px;text-transform:uppercase;margin:16px 0 8px;display:flex;align-items:center;gap:10px;}
+.sec::after{content:'';flex:1;height:1px;background:var(--border);}
+.sec-icon{color:var(--cyan);}
 
-/* Debt card */
-.dcard{background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:12px;margin-bottom:8px;}
-.dcard-top{display:flex;justify-content:space-between;align-items:center;gap:10px;}
-.dcard-name{font-size:14px;font-weight:900;}
-.dcard-badge{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:900;}
-.bg2{background:#1c4532;color:#68d391;}.bb2{background:#1a365d;color:#63b3ed;}
-.bo2{background:#3d2a0a;color:#f6ad55;}.br2{background:#742a2a;color:#fc8181;}
-.by2{background:#2d2a00;color:#f6e05e;}
-.dcard-row{display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;}
-.dcard-item .lbl{font-size:10px;color:#718096;}
-.dcard-item .val{font-size:14px;font-weight:900;margin-top:1px;}
-.dcard-note{font-size:11px;color:#718096;margin-top:6px;line-height:1.5;}
+/* TABLES */
+.tbl-wrap{overflow-x:auto;margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{background:var(--bg4);color:var(--text3);padding:10px 12px;text-align:right;font-weight:700;font-family:var(--mono);font-size:12px;letter-spacing:0.5px;border-bottom:1px solid var(--border2);}
+th:first-child,th:nth-child(2){text-align:left;}
+td{padding:9px 12px;border-bottom:1px solid rgba(30,48,80,0.5);text-align:right;font-family:var(--mono);font-size:13px;}
+td:first-child,td:nth-child(2){text-align:left;font-family:var(--sans);font-size:14px;}
+tr.ra td{background:rgba(13,21,32,0.8);}
+tr.rb td{background:rgba(17,28,46,0.6);}
+tr.rg td{background:rgba(0,31,21,0.4);}
+tr.rr td{background:rgba(26,0,16,0.6);}
+tr.ry td{background:rgba(26,18,0,0.6);}
+tr.ro td{background:rgba(26,14,0,0.6);}
+tr.tot td{background:rgba(22,34,54,0.9)!important;font-weight:700;font-size:13px;border-top:2px solid var(--border2);}
+tr.sub td{background:rgba(20,37,83,0.3)!important;color:var(--text2);}
+.g{color:var(--green);}
+.r{color:var(--red);}
+.y{color:var(--yellow);}
+.o{color:var(--orange);}
+.b{color:var(--blue);}
+.gr{color:var(--text3);}
 
-/* Progress bar */
-.pbar-wrap{margin-bottom:10px;}
-.pbar-row{display:flex;align-items:center;gap:8px;margin:6px 0;}
-.pbar-lbl{font-size:11px;color:#a0aec0;width:90px;flex-shrink:0;}
-.pbar-bg{flex:1;background:#2d3748;border-radius:5px;height:10px;overflow:hidden;}
-.pbar-fill{height:10px;border-radius:5px;}
-.pbar-val{font-size:11px;font-weight:900;width:70px;text-align:right;}
+/* BADGE */
+.bdg{display:inline-block;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:0.5px;}
+.bg{background:rgba(0,229,160,0.15);color:var(--green);border:1px solid rgba(0,229,160,0.3);}
+.br{background:rgba(255,77,109,0.15);color:var(--red);border:1px solid rgba(255,77,109,0.3);}
+.by{background:rgba(255,209,102,0.15);color:var(--yellow);border:1px solid rgba(255,209,102,0.3);}
+.bo{background:rgba(255,154,60,0.15);color:var(--orange);border:1px solid rgba(255,154,60,0.3);}
+.bb{background:rgba(77,168,255,0.15);color:var(--blue);border:1px solid rgba(77,168,255,0.3);}
 
-.ins{background:#1a2744;border-left:3px solid #4299e1;padding:10px 12px;margin:8px 0;border-radius:0 8px 8px 0;font-size:12px;line-height:1.7;color:#bee3f8;}
-.note{background:#1a1f2e;border:1px dashed #4a5568;padding:10px 11px;border-radius:8px;font-size:11px;color:#718096;margin-top:8px;line-height:1.6;}
+/* INSIGHT BOX */
+.insight{background:linear-gradient(135deg,rgba(0,102,255,0.08),rgba(0,212,255,0.05));border-left:3px solid var(--blue);padding:12px 16px;margin:10px 0;border-radius:0 6px 6px 0;font-size:14px;color:#a8c8f0;line-height:1.8;}
+.insight strong{color:var(--cyan);}
+.warn{background:linear-gradient(135deg,rgba(255,77,109,0.08),rgba(255,50,50,0.05));border-left:3px solid var(--red);padding:12px 16px;margin:10px 0;border-radius:0 6px 6px 0;font-size:14px;color:#ffb3c1;line-height:1.8;}
+.warn strong{color:var(--red);}
+.tip{background:linear-gradient(135deg,rgba(0,229,160,0.08),rgba(0,180,120,0.05));border-left:3px solid var(--green);padding:12px 16px;margin:10px 0;border-radius:0 6px 6px 0;font-size:14px;color:#a0f0d0;line-height:1.8;}
+.tip strong{color:var(--green);}
 
-/* Settings inputs */
-.inp{
-  width:120px;padding:7px;border-radius:10px;border:1px solid #2d3748;
-  background:#141820;color:#e2e8f0;font-size:13px;font-weight:900;
+/* BAR CHART */
+.bar-row{display:flex;align-items:center;gap:10px;margin:5px 0;}
+.bar-label{font-size:13px;color:var(--text2);width:150px;flex-shrink:0;font-family:var(--mono);}
+.bar-bg{flex:1;background:rgba(30,48,80,0.4);border-radius:3px;height:14px;overflow:hidden;}
+.bar-fill{height:14px;border-radius:3px;transition:width 1s ease;}
+.bar-val{font-size:13px;font-weight:700;width:80px;text-align:right;font-family:var(--mono);}
+
+/* BUY CARD */
+.buy-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0;}
+.buy-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;position:relative;overflow:hidden;}
+.buy-card.hot{border-color:rgba(0,229,160,0.4);background:linear-gradient(135deg,rgba(0,31,21,0.8),rgba(0,20,14,0.8));}
+.buy-card.warm{border-color:rgba(255,209,102,0.3);background:linear-gradient(135deg,rgba(26,18,0,0.8),rgba(17,12,0,0.8));}
+.buy-card.watch{border-color:rgba(77,168,255,0.3);background:linear-gradient(135deg,rgba(0,26,51,0.8),rgba(0,17,34,0.8));}
+.buy-card.caution{border-color:rgba(255,154,60,0.3);background:linear-gradient(135deg,rgba(26,14,0,0.6),var(--bg3));}
+.buy-ticker{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--cyan);}
+.buy-name{font-size:13px;color:var(--text3);margin:2px 0 6px;}
+.buy-now{font-family:var(--mono);font-size:13px;color:var(--text2);}
+.buy-target{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green);margin:4px 0;}
+.buy-reason{font-size:13px;color:var(--text2);line-height:1.7;margin-top:6px;}
+.buy-priority{position:absolute;top:10px;right:10px;}
+
+/* RISK ITEM */
+.risk-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(30,48,80,0.4);}
+.risk-icon{font-size:20px;flex-shrink:0;margin-top:2px;}
+.risk-body{font-size:14px;line-height:1.8;color:var(--text);}
+.risk-body strong{color:var(--yellow);}
+
+/* NOTE */
+.note{background:var(--bg3);border:1px dashed var(--border2);padding:11px 14px;border-radius:4px;font-size:13px;color:var(--text3);margin-top:10px;line-height:1.7;}
+
+/* RETIREMENT SCORE */
+.retire-score{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.rs-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
+.rs-num{font-size:34px;font-weight:900;font-family:var(--mono);}
+.rs-sub{font-size:12px;color:var(--text3);margin-top:4px;line-height:1.5;}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .kpi-grid-3{grid-template-columns:repeat(2,1fr);}
+  .retire-score{grid-template-columns:repeat(2,1fr);}
+  .buy-grid{grid-template-columns:1fr;}
 }
-.inpWide{width:160px;}
-.btnSmall{
-  background:#252d3f;color:#e2e8f0;border:1px solid #2d3748;border-radius:12px;
-  padding:7px 10px;font-size:12px;font-weight:900;cursor:pointer;
-}
-.btnDanger{background:#742a2a;color:#fed7d7;border-color:#742a2a;}
-.btnPrimary{background:linear-gradient(135deg,#2b6cb0,#3182ce);border:none;color:#fff;}
-.rowBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
-.hr{height:1px;background:#2d3748;margin:10px 0;}
 
-/* ✅ 固定螢幕下方「總覽列」：可收縮 + 左右滑切換 */
-.bottom-summary{
-  position:fixed;
-  left:0; right:0;
-  bottom:56px; /* 留給 bnav */
-  z-index:150;
-  padding:10px 10px calc(10px + env(safe-area-inset-bottom));
-  pointer-events:auto;
-}
-.bs-wrap{
-  background:rgba(17,24,39,0.94);
-  backdrop-filter: blur(10px);
-  border:1px solid #2d3748;
-  border-radius:16px;
-  overflow:hidden;
-  box-shadow:0 8px 24px rgba(0,0,0,0.35);
-}
-.bs-top{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:8px 12px;
-  border-bottom:1px solid rgba(45,55,72,0.7);
-}
-.bs-handle{
-  height:4px;width:44px;border-radius:999px;background:#2d3748;margin:0 auto;
-}
-.bs-title{
-  font-size:11px;font-weight:900;color:#a0aec0;letter-spacing:0.6px;
-}
-.bs-hint{
-  font-size:10px;color:#718096;
-}
-.bs-pages{
-  display:flex;
-  width:300%;
-  transition: transform 220ms ease;
-  touch-action: pan-y;
-}
-.bs-page{
-  width:calc(100% / 3);
-  display:flex;
-  justify-content:space-around;
-  padding:10px 8px 8px;
-}
-.bs-item{flex:1;text-align:center;}
-.bs-label{font-size:11px;color:#718096;}
-.bs-value{font-size:16px;font-weight:950;margin-top:2px;}
-.bs-dots{display:flex;gap:6px;justify-content:center;padding:8px 0 10px;}
-.bs-dot{width:6px;height:6px;border-radius:50%;background:#2d3748;}
-.bs-dot.on{background:#63b3ed;}
+/* SCROLL BAR */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 
-/* compact mode（滑動時自動收縮成小條） */
-.bs-compact .bs-page{padding:6px 8px 6px;}
-.bs-compact .bs-label{display:none;}
-.bs-compact .bs-value{font-size:14px;}
-.bs-compact .bs-top{padding:6px 12px;}
-.bs-compact .bs-hint{display:none;}
+/* ── FONT SIZE BOOST ── */
+body{font-size:19px;}
+table{font-size:17px;}
+th{font-size:15px;}
+td{font-size:16px;}
+td:first-child,td:nth-child(2){font-size:17px;}
+tr.tot td{font-size:17px;}
+.kpi-label{font-size:13px;}
+.kpi-val{font-size:30px;}
+.kpi-sub{font-size:14px;}
+.sec{font-size:14px;}
+.header-title{font-size:15px;}
+.header-main{font-size:28px;}
+.header-meta{font-size:14px;}
+.alert-bar{font-size:16px;}
+.macro-label{font-size:13px;}
+.macro-val{font-size:16px;}
+.macro-chg{font-size:13px;}
+.tab{font-size:15px;}
+.bdg{font-size:13px;}
+.insight,.warn,.tip{font-size:16px;}
+.risk-body{font-size:16px;}
+.bar-label,.bar-val{font-size:15px;}
+.buy-ticker{font-size:20px;}
+.buy-name,.buy-now,.buy-reason{font-size:15px;}
+.buy-target{font-size:17px;}
+.note{font-size:15px;}
+.rs-num{font-size:38px;}
+.rs-sub{font-size:14px;}
 </style>
 </head>
-
 <body>
 
-<!-- Header -->
-<div class="hdr">
-  <div class="hdr-top">
+<div class="header">
+  <div class="header-top">
     <div>
-      <h1>📊 投資組合報告 <span style="font-size:0.7em;color:#4a5568;font-weight:700">v28</span></h1>
-      <p>NETGEAR PM ｜ 目標 2029 退休</p>
+      <div class="header-title">// PORTFOLIO INTELLIGENCE SYSTEM</div>
+      <div class="header-main">投資策略<span>分析報告</span></div>
     </div>
-    <button class="btn-refresh" id="refreshBtn" onclick="fetchLatestPrices()">
-      <span id="refreshIcon">🔄</span><span>更新</span>
-    </button>
-  </div>
-</div>
-
-<!-- Day bar -->
-<div class="day-bar" id="dayBar">
-  <div class="day-bar-inner">
-    <div class="day-item"><div class="lbl">⏱ 更新時間</div><div class="val cgr" id="dTime">—</div></div>
-    <div class="day-item"><div class="lbl">💰 總資產</div><div class="val cy" id="dVal">—</div></div>
-    <div class="day-item"><div class="lbl">📅 當日損益</div><div class="val" id="dPnl">—</div></div>
-    <div class="day-item"><div class="lbl">📈 當日%</div><div class="val" id="dPct">—</div></div>
-    <div class="day-item"><div class="lbl">💎 淨資產</div><div class="val co" id="dNet">—</div></div>
-  </div>
-</div>
-
-<div class="alert" id="alertBox" style="display:none">🚨 <strong>市場警報：</strong><span id="alertTxt"></span></div>
-
-<div class="status">
-  <div id="priceStatus">📡 基準報價：尚未更新</div>
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-    <span class="badge bgB" id="mkBadge">狀態：—</span>
-    <span class="badge bgY" id="snapBadge">快照：—</span>
-  </div>
-</div>
-
-<!-- ══ 總覽 ══ -->
-<div id="sec-ov" class="section active">
-  <div class="cards2">
-    <div class="card">
-      <div class="cl">💰 投組現值</div>
-      <div class="cv cy" id="ov-val">—</div>
-      <div class="cs" id="ov-sub">未更新</div>
-    </div>
-    <div class="card">
-      <div class="cl">🏦 銀行現金</div>
-      <div class="cv cb" id="ov-cash">—</div>
-      <div class="cs" id="ov-cash-sub">匯豐/台新/中信</div>
-    </div>
-    <div class="card">
-      <div class="cl">💎 淨資產（含現金）</div>
-      <div class="cv co" id="ov-net">—</div>
-      <div class="cs">總資產 − 負債</div>
-    </div>
-    <div class="card">
-      <div class="cl">🏦 總負債</div>
-      <div class="cv cr" id="ov-debt">—</div>
-      <div class="cs">可在「設定」編輯</div>
-    </div>
-  </div>
-
-  <div class="cards2">
-    <div class="card">
-      <div class="cl">📊 負債比（用總資產）</div>
-      <div class="cv cr" id="ov-dr">—</div>
-      <div class="cs">目標 50%</div>
-    </div>
-    <div class="card">
-      <div class="cl">📌 質押維持率</div>
-      <div class="cv cg" id="ov-pledge">—</div>
-      <div class="cs">警戒 130%</div>
-    </div>
-    <div class="card">
-      <div class="cl">📈 投組總損益</div>
-      <div class="cv cgr" id="ov-pnl">—</div>
-      <div class="cs" id="ov-pnl-sub">vs 成本</div>
-    </div>
-    <div class="card">
-      <div class="cl">📅 當日損益（投組）</div>
-      <div class="cv cgr" id="ov-day">—</div>
-      <div class="cs">vs 前收</div>
-    </div>
-  </div>
-
-  <div class="st">🧩 資產配置（%｜含現金）</div>
-  <div class="cards4">
-    <div class="card"><div class="cl">🔵 債券</div><div class="cv cb" id="al-bond">—</div><div class="cs" id="al-bond-v">—</div></div>
-    <div class="card"><div class="cl">🟢 股票ETF</div><div class="cv cg" id="al-etf">—</div><div class="cs" id="al-etf-v">—</div></div>
-    <div class="card"><div class="cl">🟡 個股</div><div class="cv co" id="al-stk">—</div><div class="cs" id="al-stk-v">—</div></div>
-    <div class="card"><div class="cl">🏦 現金</div><div class="cv cy" id="al-cash">—</div><div class="cs" id="al-cash-v">—</div></div>
-  </div>
-
-  <div class="st">⚖️ 資產結構</div>
-  <div class="pbar-wrap">
-    <div class="pbar-row">
-      <div class="pbar-lbl">總資產</div>
-      <div class="pbar-bg"><div class="pbar-fill" style="width:100%;background:#63b3ed"></div></div>
-      <div class="pbar-val cb" id="pb-asset">—</div>
-    </div>
-    <div class="pbar-row">
-      <div class="pbar-lbl">投組現值</div>
-      <div class="pbar-bg"><div class="pbar-fill" id="pb-port-fill" style="width:0%;background:#68d391"></div></div>
-      <div class="pbar-val cg" id="pb-port">—</div>
-    </div>
-    <div class="pbar-row">
-      <div class="pbar-lbl">銀行現金</div>
-      <div class="pbar-bg"><div class="pbar-fill" id="pb-cash-fill" style="width:0%;background:#f6e05e"></div></div>
-      <div class="pbar-val cy" id="pb-cash">—</div>
-    </div>
-    <div class="pbar-row">
-      <div class="pbar-lbl">總負債</div>
-      <div class="pbar-bg"><div class="pbar-fill" id="pb-debt-fill" style="width:0%;background:#fc8181"></div></div>
-      <div class="pbar-val cr" id="pb-debt">—</div>
-    </div>
-    <div class="pbar-row">
-      <div class="pbar-lbl">淨資產</div>
-      <div class="pbar-bg"><div class="pbar-fill" id="pb-net-fill" style="width:0%;background:#f6ad55"></div></div>
-      <div class="pbar-val co" id="pb-net">—</div>
-    </div>
-  </div>
-
-  <div class="ins">
-    📌 <strong>提示：</strong>下方固定總覽列可左右滑切換。滑動頁面時會自動縮成小條，方便看內容。
-  </div>
-</div>
-
-<!-- ══ 損益 ══ -->
-<div id="sec-pnl" class="section">
-  <div class="cards2">
-    <div class="card"><div class="cl">💰 投組現值</div><div class="cv cy" id="p-val">—</div><div class="cs" id="p-sub">未更新</div></div>
-    <div class="card"><div class="cl">📈 投組總損益</div><div class="cv cgr" id="p-pnl">—</div><div class="cs" id="p-pnl-sub">vs 成本</div></div>
-    <div class="card"><div class="cl">📅 當日損益</div><div class="cv cgr" id="p-day">—</div><div class="cs">vs 前收</div></div>
-    <div class="card"><div class="cl">📦 投入成本</div><div class="cv cb" id="p-cost">—</div><div class="cs">持股成本合計</div></div>
-  </div>
-
-  <div class="st">🔵 債券ETF</div>
-  <div id="bondCards"></div>
-
-  <div class="st">🟢 股票ETF</div>
-  <div id="etfCards"></div>
-
-  <div class="st">🟡 個股</div>
-  <div id="stkCards"></div>
-</div>
-
-<!-- ══ 負債 ══ -->
-<div id="sec-debt" class="section">
-  <div class="cards2">
-    <div class="card"><div class="cl">🏦 總負債</div><div class="cv cr" id="d-tot">—</div><div class="cs">可在「設定」調整</div></div>
-    <div class="card"><div class="cl">💸 月還款</div><div class="cv cr" id="d-mo">—</div><div class="cs">金融貸款合計</div></div>
-    <div class="card"><div class="cl">📅 年利息</div><div class="cv co" id="d-int">—</div><div class="cs">簡化估算：餘額×利率</div></div>
-    <div class="card"><div class="cl">🎯 平均利率</div><div class="cv cy" id="d-apr">—</div><div class="cs">加權平均</div></div>
-  </div>
-
-  <div class="st">💳 負債清單</div>
-  <div id="debtList"></div>
-</div>
-
-<!-- ══ 設定 ══ -->
-<div id="sec-set" class="section">
-  <div class="st">⚙️ 設定（新增 / 刪除 / 編輯）</div>
-
-  <div class="st">🔎 顯示放大（全站）</div>
-  <div class="dcard">
-    <div class="dcard-row" style="align-items:flex-end">
-      <div class="dcard-item">
-        <div class="lbl">大小</div>
-        <select id="uiScaleSel" class="inp inpWide">
-          <option value="1.00">標準 100%</option>
-          <option value="1.15">放大 115%</option>
-          <option value="1.30">放大 130%（建議）</option>
-          <option value="1.45">放大 145%</option>
-          <option value="1.60">超大 160%</option>
-        </select>
-      </div>
-      <button class="btnSmall btnPrimary" onclick="applyUiScale()">套用</button>
-    </div>
-    <div class="dcard-note">套用後會立即放大（不用刷新）。</div>
-  </div>
-
-  <div class="st">🏦 現金（萬）</div>
-  <div class="dcard">
-    <div class="dcard-row">
-      <div class="dcard-item"><div class="lbl">匯豐</div><input id="cash-hsbc" class="inp" type="number" step="0.1"></div>
-      <div class="dcard-item"><div class="lbl">台新</div><input id="cash-taishin" class="inp" type="number" step="0.1"></div>
-      <div class="dcard-item"><div class="lbl">中信</div><input id="cash-ctbc" class="inp" type="number" step="0.1"></div>
-    </div>
-  </div>
-
-  <div class="st">💳 負債（新增/刪除）</div>
-  <div id="debtEditor"></div>
-  <div class="rowBtns">
-    <button class="btnSmall btnPrimary" onclick="addDebt()">➕ 新增負債</button>
-  </div>
-
-  <div class="st">📈 持股（新增/刪除）</div>
-  <div id="holdEditor"></div>
-  <div class="rowBtns">
-    <button class="btnSmall btnPrimary" onclick="addHolding()">➕ 新增持股</button>
-  </div>
-
-  <div class="hr"></div>
-
-  <div class="st">⏱ 自動更新（會耗 Worker 流量）</div>
-  <div class="dcard">
-    <div class="dcard-row" style="align-items:flex-end">
-      <div class="dcard-item">
-        <div class="lbl">開關</div>
-        <select id="autoOn" class="inp inpWide">
-          <option value="off">關閉</option>
-          <option value="on">開啟</option>
-        </select>
-      </div>
-      <div class="dcard-item">
-        <div class="lbl">每 X 分鐘</div>
-        <input id="autoMin" class="inp" type="number" step="1" min="1" value="5">
-      </div>
-      <button class="btnSmall btnPrimary" onclick="applyAuto()">套用</button>
-    </div>
-  </div>
-
-  <button onclick="saveAllSettings()" class="btnSmall btnPrimary" style="width:100%;padding:14px;border-radius:16px;font-size:14px;">
-    💾 保存設定
-  </button>
-</div>
-
-<!-- ✅ 固定螢幕下方「總覽列」 -->
-<div class="bottom-summary" id="bottomSummary">
-  <div class="bs-wrap" id="bsWrap">
-    <div class="bs-top">
-      <div style="width:70px"></div>
-      <div style="flex:1;text-align:center">
-        <div class="bs-handle"></div>
-      </div>
-      <div style="width:70px;text-align:right">
-        <span class="bs-hint">左右滑</span>
-      </div>
-    </div>
-
-    <div style="padding:0 12px 0;display:flex;justify-content:space-between;align-items:center;">
-      <div class="bs-title" id="bsTitle">總覽</div>
-      <div class="bs-hint" id="bsSub">固定列 · 自動收縮</div>
-    </div>
-
-    <div class="bs-pages" id="bsPages">
-      <!-- Page 1 -->
-      <div class="bs-page">
-        <div class="bs-item"><div class="bs-label">總資產</div><div class="bs-value cy" id="bs-asset">—</div></div>
-        <div class="bs-item"><div class="bs-label">淨資產</div><div class="bs-value co" id="bs-net">—</div></div>
-        <div class="bs-item"><div class="bs-label">負債比</div><div class="bs-value cr" id="bs-dr">—</div></div>
-      </div>
-
-      <!-- Page 2 -->
-      <div class="bs-page">
-        <div class="bs-item"><div class="bs-label">當日損益</div><div class="bs-value" id="bs-day">—</div></div>
-        <div class="bs-item"><div class="bs-label">當日%</div><div class="bs-value" id="bs-daypct">—</div></div>
-        <div class="bs-item"><div class="bs-label">盤中/收盤</div><div class="bs-value cb" id="bs-mk">—</div></div>
-      </div>
-
-      <!-- Page 3 -->
-      <div class="bs-page">
-        <div class="bs-item"><div class="bs-label">總損益</div><div class="bs-value" id="bs-total">—</div></div>
-        <div class="bs-item"><div class="bs-label">總%</div><div class="bs-value" id="bs-totalpct">—</div></div>
-        <div class="bs-item"><div class="bs-label">質押維持</div><div class="bs-value" id="bs-pledge">—</div></div>
-      </div>
-    </div>
-
-    <div class="bs-dots">
-      <div class="bs-dot on" id="dot0"></div>
-      <div class="bs-dot" id="dot1"></div>
-      <div class="bs-dot" id="dot2"></div>
+    <div class="header-meta">
+      <div class="live">● LIVE</div>
+      <div>2026 / 03 / 23</div>
+      <div>開盤實測 + 預測檢討</div>
     </div>
   </div>
 </div>
 
-<!-- Bottom Nav -->
-<nav class="bnav">
-  <button class="bnav-item active" onclick="showSec('ov',this)"><span class="ico">💎</span>總覽</button>
-  <button class="bnav-item" onclick="showSec('pnl',this)"><span class="ico">📊</span>損益</button>
-  <button class="bnav-item" onclick="showSec('debt',this)"><span class="ico">💳</span>負債</button>
-  <button class="bnav-item" onclick="showSec('set',this)"><span class="ico">⚙️</span>設定</button>
-</nav>
+<div class="alert-bar">
+  <div class="alert-dot"></div>
+  <strong>3/23開盤警報：</strong>台股大幅開低！006208開盤172（-2.4%）、00720B=32.96（-1.5%）、00687B=28.16（-1.4%）。記憶體族群重挫：2344=-7.8%、2408大跌。已知5檔合計今日損失約-160萬。外資賣超力道蓋過台指期夜盤+2.45%反彈訊號。
+</div>
+
+<div class="macro-bar">
+  <div class="macro-item"><div class="macro-label">USD/TWD</div><div class="macro-val neu">32.02</div><div class="macro-chg up">+0.62%</div></div>
+  <div class="macro-item"><div class="macro-label">US10Y</div><div class="macro-val r">4.372%</div><div class="macro-chg r">+2.74%</div></div>
+  <div class="macro-item"><div class="macro-label">US20Y</div><div class="macro-val r">4.967%</div><div class="macro-chg r">+2.75%</div></div>
+  <div class="macro-item"><div class="macro-label">US30Y</div><div class="macro-val r">4.934%</div><div class="macro-chg r">+1.91%</div></div>
+  <div class="macro-item"><div class="macro-label">TLT</div><div class="macro-val r">85.83</div><div class="macro-chg r">-1.90%</div></div>
+  <div class="macro-item"><div class="macro-label">QQQ</div><div class="macro-val r">582.06</div><div class="macro-chg r">-1.85%</div></div>
+  <div class="macro-item"><div class="macro-label">GOLD</div><div class="macro-val r">4,498</div><div class="macro-chg r">-3.43%</div></div>
+  <div class="macro-item"><div class="macro-label">NVDA</div><div class="macro-val r">172.70</div><div class="macro-chg r">-3.28%</div></div>
+  <div class="macro-item"><div class="macro-label">TSM</div><div class="macro-val r">329.24</div><div class="macro-chg r">-2.82%</div></div>
+  <div class="macro-item"><div class="macro-label">NTGR</div><div class="macro-val r">20.84</div><div class="macro-chg r">-2.39%</div></div>
+  <div class="macro-item"><div class="macro-label">BTC</div><div class="macro-val r">68,791</div><div class="macro-chg r">-2.60%</div></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('ov')">💎 財務總覽</div>
+  <div class="tab" onclick="showTab('pnl')">📊 持股損益</div>
+  <div class="tab" onclick="showTab('pledge')">📌 質押分析</div>
+  <div class="tab" onclick="showTab('debt')">💳 負債現金流</div>
+  <div class="tab" onclick="showTab('buy')">🛒 低接機會</div>
+  <div class="tab" onclick="showTab('retire')">🏖️ 退休計畫</div>
+  <div class="tab" onclick="showTab('risk')">🚨 風險監控</div>
+  <div class="tab" onclick="showTab('review')" style="color:#ff9a3c;border-bottom-color:transparent;">🔍 預測檢討</div>
+</div>
+
+<!-- ══ 財務總覽 ══ -->
+<div id="tab-ov" class="content active">
+  <div class="kpi-grid">
+    <div class="kpi yellow">
+      <div class="kpi-label">投資組合現值（估）</div>
+      <div class="kpi-val y">6,399萬</div>
+      <div class="kpi-sub">3/22昨收價計算<br>較3/6 下跌約348萬</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">總負債</div>
+      <div class="kpi-val r">4,946萬</div>
+      <div class="kpi-sub">質押2,528萬＋信貸1,218萬<br>房貸600萬＋親借600萬</div>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-label">淨資產（估）</div>
+      <div class="kpi-val o">1,453萬</div>
+      <div class="kpi-sub">較3/6 減少348萬<br>市場下跌侵蝕淨值</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">負債比率</div>
+      <div class="kpi-val r">77.3%</div>
+      <div class="kpi-sub">⚠️ 較3/6上升4個百分點<br>目標：3年內降至50%</div>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi green">
+      <div class="kpi-label">月現金流淨額</div>
+      <div class="kpi-val g">＋28.3萬</div>
+      <div class="kpi-sub">薪資22萬＋配息−還款<br>結構穩健</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">質押維持率（中信）</div>
+      <div class="kpi-val g">253.3%</div>
+      <div class="kpi-sub">安全線130%<br>距追繳需再跌約48%</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">月配息收入</div>
+      <div class="kpi-val b">~29.5萬</div>
+      <div class="kpi-sub">債券ETF為主<br>已超退休所需門檻</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">退休後月淨現金流</div>
+      <div class="kpi-val g">~21–23萬</div>
+      <div class="kpi-sub">按3年後降槓桿計算<br>目標維持≥20萬</div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="sec-icon">⚖️</span> 資產負債結構</div>
+  <div style="padding:4px 0 12px;">
+    <div class="bar-row"><div class="bar-label">投資組合現值</div><div class="bar-bg"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#4da8ff,#00d4ff)"></div></div><div class="bar-val b">6,399萬</div></div>
+    <div class="bar-row"><div class="bar-label">總負債</div><div class="bar-bg"><div class="bar-fill" style="width:77.3%;background:linear-gradient(90deg,#cc2244,#ff4d6d)"></div></div><div class="bar-val r">4,946萬</div></div>
+    <div class="bar-row"><div class="bar-label">淨資產</div><div class="bar-bg"><div class="bar-fill" style="width:22.7%;background:linear-gradient(90deg,#00b87d,#00e5a0)"></div></div><div class="bar-val g">1,453萬</div></div>
+    <div class="bar-row"><div class="bar-label">股票質押</div><div class="bar-bg"><div class="bar-fill" style="width:39.5%;background:linear-gradient(90deg,#cc7700,#ff9a3c)"></div></div><div class="bar-val o">2,528萬</div></div>
+  </div>
+
+  <div class="sec"><span class="sec-icon">📋</span> 資產配置結構</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>類別</th><th>主要標的</th><th>現值(萬)</th><th>佔比</th><th>較3/6</th><th>損益(估)</th></tr>
+      <tr class="ra"><td>💎 美國長期公債</td><td>00687B×45萬股</td><td>1,286</td><td>20.1%</td><td class="r">↓ -572</td><td class="r">−6.4%</td></tr>
+      <tr class="rb"><td>💼 投資級公司債</td><td>00720B＋00772B＋00937B</td><td>2,626</td><td>41.0%</td><td class="r">↓ -32</td><td class="gr">持平</td></tr>
+      <tr class="ra"><td>📊 非投等高收益債</td><td>00953B×200.5萬股</td><td>1,935</td><td>30.2%</td><td class="g">↑ +56</td><td class="g">+1.0%</td></tr>
+      <tr class="rb"><td>🇹🇼 台股ETF</td><td>0050＋006208＋0056＋00878</td><td>401</td><td>6.3%</td><td class="g">↑ +229</td><td class="g">+大</td></tr>
+      <tr class="ra"><td>🌐 海外/高息ETF</td><td>00882＋00771</td><td>86</td><td>1.3%</td><td class="r">↓ -1</td><td class="r">混合</td></tr>
+      <tr class="rb"><td>🏦 個股</td><td>2834＋2347＋2838＋2889</td><td>65</td><td>1.0%</td><td class="r">↓ -28</td><td class="gr">混合</td></tr>
+      <tr class="tot"><td colspan="2">合計</td><td>6,399</td><td>100%</td><td class="r">↓ -348萬</td><td class="r">−0.8%</td></tr>
+    </table>
+  </div>
+
+  <div class="warn">⚠️ <strong>3/22關鍵變化：</strong>美10年債殖利率升至4.372%，TLT單日-1.9%。00687B（450萬股×28.57）估值已從3/6的1,858萬大幅縮水至1,286萬（約-572萬）。這是本週最大財務衝擊，需優先關注。</div>
+  <div class="insight">📌 <strong>核心邏輯仍成立：</strong>以均約2.2%低利率借貸，投入年化5-7%的債券ETF，年利差收益約266萬。月現金流+28.3萬穩健。質押維持率253%遠高於安全線130%，短期無追繳風險。</div>
+</div>
+
+<!-- ══ 持股損益 ══ -->
+<div id="tab-pnl" class="content">
+  <div class="insight">📡 <strong>數據說明：</strong>收盤價採3/22昨收價（來自中信質押系統）；00953B總股數修正為2,005,000股（質押1,855,000 + 未質押150,000）。00687B質押股數450,000股（較3/6的640,000減少190,000股）。</div>
+
+  <div class="sec"><span class="sec-icon">📊</span> 持倉明細</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>名稱</th><th>股數(萬)</th><th>昨收</th><th>現值(萬)</th><th>成本</th><th>損益(萬)</th><th>損益%</th><th>狀態</th></tr>
+      <tr class="rr"><td class="r">00687B</td><td>國泰美債20年</td><td>45.0</td><td>28.57</td><td class="r">1,285.7</td><td>30.24</td><td class="r">−75.2</td><td class="r">−5.5%</td><td><span class="bdg br">承壓</span></td></tr>
+      <tr class="rg"><td class="g">00720B</td><td>元大投資級</td><td>65.0</td><td>33.45</td><td class="g">2,174.3</td><td>33.87</td><td class="r">−27.3</td><td class="r">−1.2%</td><td><span class="bdg by">持平</span></td></tr>
+      <tr class="rg"><td class="g">00953B</td><td>群益遠非高收益</td><td>200.5</td><td>9.65</td><td class="g">1,934.8</td><td>9.59</td><td class="g">+12.0</td><td class="g">+0.6%</td><td><span class="bdg bg">穩健</span></td></tr>
+      <tr class="rg"><td class="g">00937B</td><td>群益ESG</td><td>15.5</td><td>14.91</td><td class="g">231.1</td><td>14.83</td><td class="g">+1.2</td><td class="g">+0.5%</td><td><span class="bdg bg">小盈</span></td></tr>
+      <tr class="rb"><td>00772B</td><td>中信高評級</td><td>6.5</td><td>34.02</td><td>221.1</td><td>35.69</td><td class="r">−10.9</td><td class="r">−4.7%</td><td><span class="bdg by">低風險</span></td></tr>
+      <tr class="rg"><td class="g">006208</td><td>富邦台50</td><td>2.5</td><td>176.20</td><td class="g">440.5</td><td>121.90</td><td class="g">+135.8</td><td class="g">+44.5%</td><td><span class="bdg bg">大盈</span></td></tr>
+      <tr class="rg"><td class="g">0050</td><td>元大台灣50</td><td>0.5246</td><td>75.90</td><td class="g">39.8</td><td>51.39</td><td class="g">+12.9</td><td class="g">+47.7%</td><td><span class="bdg bg">大盈</span></td></tr>
+      <tr class="rg"><td class="g">0056</td><td>元大高股息</td><td>0.5</td><td>38.77</td><td class="g">19.4</td><td>32.23</td><td class="g">+3.3</td><td class="g">+20.3%</td><td><span class="bdg bg">穩盈</span></td></tr>
+      <tr class="rb"><td>00878</td><td>國泰永續高股息</td><td>1.0</td><td>22.47</td><td>22.5</td><td>18.29</td><td class="g">+4.2</td><td class="g">+22.8%</td><td><span class="bdg bg">穩盈</span></td></tr>
+      <tr class="rr"><td class="r">00771</td><td>元大US高息特別股</td><td>2.9</td><td>16.08</td><td class="r">46.6</td><td>19.06</td><td class="r">−8.6</td><td class="r">−15.6%</td><td><span class="bdg br">出清中</span></td></tr>
+      <tr class="rb"><td>00882</td><td>中國高股息</td><td>2.5</td><td>15.87</td><td>39.7</td><td>13.34</td><td class="g">+6.3</td><td class="g">+19.0%</td><td><span class="bdg bg">獲利</span></td></tr>
+      <tr class="rg"><td class="g">2347</td><td>聯強國際</td><td>0.5</td><td>77.30</td><td class="g">38.7</td><td>70.00</td><td class="g">+3.7</td><td class="g">+10.4%</td><td><span class="bdg bg">盈利</span></td></tr>
+      <tr class="rb"><td>2834</td><td>臺企銀</td><td>3.5509</td><td>15.00</td><td>53.3</td><td>13.43</td><td class="g">+5.6</td><td class="g">+11.7%</td><td><span class="bdg bg">小盈</span></td></tr>
+      <tr class="rb"><td>2838</td><td>聯邦銀</td><td>0.1</td><td>20.15</td><td>2.0</td><td>14.08</td><td class="g">+0.6</td><td class="g">+43.1%</td><td><span class="bdg bg">盈利</span></td></tr>
+      <tr class="tot"><td colspan="2">合計</td><td>—</td><td>—</td><td>6,399</td><td>—</td><td class="r">−142萬</td><td class="r">−2.2%</td><td>—</td></tr>
+    </table>
+  </div>
+
+  <div class="warn">⚠️ <strong>00687B重大下修：</strong>3/6估值1,858萬 → 3/22估值1,286萬，質押股數也從64萬減至45萬股，總損益-75萬（-5.5%），且殖利率4.372%持續上壓，短期難回成本。<strong>建議：持有等降息，勿在高殖利率時停損。</strong></div>
+  <div class="tip">✅ <strong>亮點：</strong>006208/0050累積獲利超過150萬（+44-48%），是重要的浮盈緩衝。00953B持倉規模最大（200.5萬股），整體微盈，配息穩定，是退休現金流核心。</div>
+</div>
+
+<!-- ══ 質押分析 ══ -->
+<div id="tab-pledge" class="content">
+  <div class="kpi-grid">
+    <div class="kpi red">
+      <div class="kpi-label">已借總金額（中信）</div>
+      <div class="kpi-val r">2,528萬</div>
+      <div class="kpi-sub">較報告3/6的2,428萬<br>增加100萬</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">借貸維持率</div>
+      <div class="kpi-val g">253.3%</div>
+      <div class="kpi-sub">安全線130%<br>距追繳線需再跌~48%</div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-label">質押擔保品市值</div>
+      <div class="kpi-val y">~6,401萬</div>
+      <div class="kpi-sub">按昨收價計算<br>（幾乎全倉質押）</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">每月質押利息</div>
+      <div class="kpi-val b">~4.7萬</div>
+      <div class="kpi-sub">2,528萬×2.24%/12<br>目標退休前降至2.2萬</div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="sec-icon">📌</span> 各標的質押明細</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>名稱</th><th>已質押股</th><th>總持股</th><th>質押率</th><th>昨收</th><th>擔保市值(萬)</th></tr>
+      <tr class="rr"><td class="r">00687B</td><td>國泰美債20年</td><td>450,000</td><td>450,000</td><td class="r">100%</td><td>28.57</td><td class="r">1,285.7</td></tr>
+      <tr class="ra"><td>00720B</td><td>元大投資級</td><td>650,000</td><td>650,000</td><td>100%</td><td>33.45</td><td>2,174.3</td></tr>
+      <tr class="rg"><td class="g">00953B</td><td>群益遠非</td><td>1,855,000</td><td>2,005,000</td><td class="g">92.5%</td><td>9.65</td><td>1,790.1</td></tr>
+      <tr class="ra"><td>00937B</td><td>群益ESG</td><td>155,000</td><td>155,000</td><td>100%</td><td>14.91</td><td>231.1</td></tr>
+      <tr class="rb"><td>00772B</td><td>中信高評級</td><td>65,000</td><td>65,000</td><td>100%</td><td>34.02</td><td>221.1</td></tr>
+      <tr class="ra"><td>006208</td><td>富邦台50</td><td>25,000</td><td>25,000</td><td>100%</td><td>176.20</td><td>440.5</td></tr>
+      <tr class="ra"><td>0050</td><td>元大台50</td><td>5,000</td><td>5,246</td><td class="g">95.3%</td><td>75.90</td><td>37.95</td></tr>
+      <tr class="ra"><td>0056</td><td>高股息</td><td>5,000</td><td>5,000</td><td>100%</td><td>38.77</td><td>19.4</td></tr>
+      <tr class="ra"><td>00878</td><td>國泰永續</td><td>10,000</td><td>10,000</td><td>100%</td><td>22.47</td><td>22.5</td></tr>
+      <tr class="rr"><td class="r">00771</td><td>元大US高息</td><td>29,000</td><td>29,000</td><td>100%</td><td>16.08</td><td>46.6</td></tr>
+      <tr class="ra"><td>00882</td><td>中國高息</td><td>25,000</td><td>25,000</td><td>100%</td><td>15.87</td><td>39.7</td></tr>
+      <tr class="ra"><td>2347</td><td>聯強</td><td>5,000</td><td>5,000</td><td>100%</td><td>77.30</td><td>38.7</td></tr>
+      <tr class="ra"><td>2834</td><td>臺企銀</td><td>35,000</td><td>35,509</td><td class="g">98.6%</td><td>15.00</td><td>52.5</td></tr>
+      <tr class="ra"><td>2838</td><td>聯邦銀</td><td>1,000</td><td>1,000</td><td>100%</td><td>20.15</td><td>2.0</td></tr>
+      <tr class="tot"><td colspan="6">擔保品總市值</td><td class="g">6,402萬</td></tr>
+    </table>
+  </div>
+
+  <div class="sec"><span class="sec-icon">⚠️</span> 追繳壓力測試</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>情境</th><th>假設跌幅</th><th>估算維持率</th><th>風險等級</th><th>說明</th></tr>
+      <tr class="rg"><td>基準</td><td>0%</td><td class="g">253%</td><td><span class="bdg bg">安全</span></td><td>目前狀況，距安全線充足</td></tr>
+      <tr class="rg"><td>小跌</td><td>-10%</td><td class="g">228%</td><td><span class="bdg bg">安全</span></td><td>仍遠高於安全線</td></tr>
+      <tr class="ry"><td>中跌</td><td>-25%</td><td class="y">190%</td><td><span class="bdg by">留意</span></td><td>開始縮小緩衝空間</td></tr>
+      <tr class="ro"><td>重跌</td><td>-40%</td><td class="o">152%</td><td><span class="bdg bo">警戒</span></td><td>接近但未到追繳線</td></tr>
+      <tr class="rr"><td>極端</td><td>-48%</td><td class="r">132%</td><td><span class="bdg br">危險</span></td><td>逼近130%追繳線</td></tr>
+    </table>
+  </div>
+  <div class="insight">📌 <strong>質押安全評估：</strong>目前維持率253%，需要整體持倉再跌48%才會面臨追繳。鑒於持倉以投資級債券ETF為主（波動相對股票小），短期追繳風險低。但00687B佔擔保品市值最高，殖利率繼續上升將持續壓縮。</div>
+</div>
+
+<!-- ══ 負債現金流 ══ -->
+<div id="tab-debt" class="content">
+  <div class="sec"><span class="sec-icon">💳</span> 負債結構明細</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>負債類別</th><th>餘額（萬）</th><th>利率</th><th>月攤還</th><th>到期</th><th>優先度</th></tr>
+      <tr class="rr"><td>台新信貸</td><td class="r">568</td><td class="r">2.28%</td><td class="r">7.7萬</td><td>2032/7</td><td><span class="bdg br">最高加速還</span></td></tr>
+      <tr class="ro"><td>富邦信貸</td><td class="o">300</td><td class="o">2.09%</td><td class="o">3.0萬</td><td>2028</td><td><span class="bdg bo">次高</span></td></tr>
+      <tr class="rb"><td>安泰信貸</td><td>350</td><td>1.97%</td><td>2.0萬</td><td>2029</td><td><span class="bdg bb">中</span></td></tr>
+      <tr class="rb"><td>匯豐房貸</td><td>600</td><td>~1.8%</td><td>3.6萬</td><td>長期</td><td><span class="bdg bb">低（好利率）</span></td></tr>
+      <tr class="ra"><td>親借（無息）</td><td>600</td><td>0%</td><td>0</td><td>無期限</td><td><span class="bdg bg">最低</span></td></tr>
+      <tr class="rr"><td>股票質押（中信）</td><td class="r">2,528</td><td class="r">~2.24%</td><td class="r">4.7萬</td><td>滾動</td><td><span class="bdg br">逐步降槓桿</span></td></tr>
+      <tr class="tot"><td>總負債</td><td class="r">4,946</td><td class="gr">均~2.1%</td><td class="r">21.0萬</td><td>—</td><td>—</td></tr>
+    </table>
+  </div>
+
+  <div class="sec"><span class="sec-icon">💸</span> 月現金流詳細</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>項目</th><th>月金額</th><th>說明</th></tr>
+      <tr class="rg"><td>✅ 薪資（稅後）</td><td class="g">+22.0萬</td><td>PM主管薪資</td></tr>
+      <tr class="rg"><td>✅ 債券ETF月配息</td><td class="g">+29.5萬</td><td>00720B+00953B+00937B+00772B+00687B</td></tr>
+      <tr class="rg"><td>✅ 股票配息（均攤）</td><td class="g">+1.0萬</td><td>ETF＋個股</td></tr>
+      <tr class="rr"><td>❌ 台新信貸攤還</td><td class="r">−7.7萬</td><td>加速每月額外+10萬</td></tr>
+      <tr class="rr"><td>❌ 富邦信貸攤還</td><td class="r">−3.0萬</td><td>正常攤還</td></tr>
+      <tr class="rr"><td>❌ 安泰信貸攤還</td><td class="r">−2.0萬</td><td>正常攤還</td></tr>
+      <tr class="rr"><td>❌ 匯豐房貸</td><td class="r">−3.6萬</td><td>正常攤還</td></tr>
+      <tr class="rr"><td>❌ 質押利息</td><td class="r">−4.7萬</td><td>2,528萬×2.24%/12</td></tr>
+      <tr class="rr"><td>❌ 生活費（估）</td><td class="r">−3.2萬</td><td>基本生活開銷</td></tr>
+      <tr class="tot"><td>📌 月淨現金流</td><td class="g">+28.3萬</td><td>薪資期間正常健康</td></tr>
+      <tr class="sub"><td>🏖️ 退休後月現金流</td><td class="o">+21–23萬</td><td>失去薪資22萬，但降槓桿後</td></tr>
+    </table>
+  </div>
+
+  <div class="tip">✅ <strong>現金流健康：</strong>月配息29.5萬已足以覆蓋所有負債攤還（21萬），加上薪資22萬，每月有28萬+淨結餘可用於加速還款或定期定額投資。<strong>雪崩法優先台新→富邦→安泰。</strong></div>
+</div>
+
+<!-- ══ 低接機會 ══ -->
+<div id="tab-buy" class="content">
+  <div class="warn">⚠️ <strong>本週市場環境：</strong>美債殖利率上升（10Y 4.372%）、美元走強、黃金/科技/半導體全面回落。若本週繼續下跌，以下標的具備低接價值，但需設定停損紀律。</div>
+
+  <div class="sec"><span class="sec-icon">🛒</span> 強烈建議低接（適合你的退休策略）</div>
+  <div class="buy-grid">
+    <div class="buy-card hot">
+      <div class="buy-priority"><span class="bdg bg">★★★ 首選</span></div>
+      <div class="buy-ticker">00953B</div>
+      <div class="buy-name">群益遠非高收益債 / 現價9.65</div>
+      <div class="buy-now">現持：200.5萬股 ｜ 成本：9.59</div>
+      <div class="buy-target">低接目標：9.40–9.55元</div>
+      <div class="buy-reason">
+        ✅ 月月配息，非投等債受利率影響較小<br>
+        ✅ 已是最大持倉，熟悉度最高<br>
+        ✅ 每增加10萬股（~96萬）月配息增約4,500元<br>
+        ⚡ 建議每跌0.1元加碼10–20萬股
+      </div>
+    </div>
+    <div class="buy-card hot">
+      <div class="buy-priority"><span class="bdg bg">★★★ 首選</span></div>
+      <div class="buy-ticker">00720B</div>
+      <div class="buy-name">元大投資級公司債 / 現價33.45</div>
+      <div class="buy-now">現持：65萬股 ｜ 成本：33.87</div>
+      <div class="buy-target">低接目標：32.80–33.20元</div>
+      <div class="buy-reason">
+        ✅ 月配息核心，AA級以上信用<br>
+        ✅ 現已輕微虧損，逢低可降低成本<br>
+        ✅ 聯準會未來降息最大受益者<br>
+        ⚡ 建議每跌0.3元加碼5–10萬股
+      </div>
+    </div>
+    <div class="buy-card warm">
+      <div class="buy-priority"><span class="bdg by">★★ 次選</span></div>
+      <div class="buy-ticker">006208</div>
+      <div class="buy-name">富邦台灣50 / 現價176.20</div>
+      <div class="buy-now">現持：2.5萬股 ｜ 成本：121.90（+44%）</div>
+      <div class="buy-target">低接目標：165–170元</div>
+      <div class="buy-reason">
+        ✅ 定期定額核心，長期抗通膨<br>
+        ✅ 目前已有+44%浮盈作為緩衝<br>
+        ✅ 每月3-5萬定期定額，逢跌加碼<br>
+        ⚡ 每月固定投入3萬，大跌加碼5萬
+      </div>
+    </div>
+    <div class="buy-card warm">
+      <div class="buy-priority"><span class="bdg by">★★ 次選</span></div>
+      <div class="buy-ticker">00937B</div>
+      <div class="buy-name">群益ESG投等債 / 現價14.91</div>
+      <div class="buy-now">現持：15.5萬股 ｜ 成本：14.83</div>
+      <div class="buy-target">低接目標：14.60–14.75元</div>
+      <div class="buy-reason">
+        ✅ 月配息穩定，ESG投等級別<br>
+        ✅ 現微盈，加碼可強化配息<br>
+        ✅ 下跌空間相對有限<br>
+        ⚡ 建議跌至14.7以下加碼5萬股
+      </div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="sec-icon">👁️</span> 觀察伺機（需配合資金規劃）</div>
+  <div class="buy-grid">
+    <div class="buy-card watch">
+      <div class="buy-priority"><span class="bdg bb">觀察</span></div>
+      <div class="buy-ticker">00687B</div>
+      <div class="buy-name">國泰美債20年 / 現價28.57（-5.5%）</div>
+      <div class="buy-now">現持：45萬股 ｜ 成本：30.24</div>
+      <div class="buy-target">低接目標：27.50–28.00（殖利率4.6%+再考慮）</div>
+      <div class="buy-reason">
+        ⚠️ 美10Y殖利率4.37%仍高，繼續承壓<br>
+        ⚠️ 殖利率未見頂前不急著低接<br>
+        ✅ 若跌至27.5且10Y殖利率≥4.6%，代表超跌<br>
+        ⚡ 等待FOMC信號再決定，目前按兵不動
+      </div>
+    </div>
+    <div class="buy-card watch">
+      <div class="buy-priority"><span class="bdg bb">觀察</span></div>
+      <div class="buy-ticker">2347 聯強</div>
+      <div class="buy-name">聯強國際 / 現價77.30（+10.4%）</div>
+      <div class="buy-now">現持：5,000股 ｜ 浮盈+3.7萬</div>
+      <div class="buy-target">低接目標：72–74元</div>
+      <div class="buy-reason">
+        ✅ CPO/AI基礎設施受益股<br>
+        ✅ 若跌至72附近，P/E估值合理<br>
+        ⚠️ Q1財報（4月）為關鍵觀察點<br>
+        ⚡ 可小量加碼，持倉不超過總資產1%
+      </div>
+    </div>
+    <div class="buy-card caution">
+      <div class="buy-priority"><span class="bdg bo">出清</span></div>
+      <div class="buy-ticker">00771</div>
+      <div class="buy-name">元大US高息特別股 / 現價16.08（-15.6%）</div>
+      <div class="buy-now">現持：2.9萬股 ｜ 虧損-8.6萬</div>
+      <div class="buy-target">❌ 不建議低接，建議逢反彈出清</div>
+      <div class="buy-reason">
+        ❌ 趨勢持續偏弱，美元走強不利<br>
+        ❌ 特別股在升息環境表現差<br>
+        ❌ 已虧損-15.6%，繼續持有機會成本高<br>
+        ⚡ 反彈至16.5+即出清，資金轉00720B
+      </div>
+    </div>
+    <div class="buy-card caution">
+      <div class="buy-priority"><span class="bdg bo">獲利了結</span></div>
+      <div class="buy-ticker">00882</div>
+      <div class="buy-name">中國高股息 / 現價15.87（+19%）</div>
+      <div class="buy-now">現持：2.5萬股 ｜ 浮盈+6.3萬</div>
+      <div class="buy-target">⚡ 目標：16.5–17元獲利了結</div>
+      <div class="buy-reason">
+        ✅ 已有+19%獲利，兌現落袋<br>
+        ⚠️ 中美貿易摩擦風險存在<br>
+        ⚠️ 獲利資金轉還台新信貸更划算<br>
+        ⚡ 分批於15.8–16.5出清，資金還債
+      </div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="sec-icon">🌟</span> 長線CPO布局機會（總資產3%以內）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>目前價（台股）</th><th>建議低接區</th><th>3年目標</th><th>布局理由</th></tr>
+      <tr class="rg"><td>智邦 2345</td><td>~350（估）</td><td>320–340元</td><td class="g">500–600元</td><td>CPO光連接核心，AI伺服器必需</td></tr>
+      <tr class="rb"><td>華星光 4979</td><td>~180（估）</td><td>160–175元</td><td class="g">250–300元</td><td>光模組關鍵供應鏈，訂單能見度高</td></tr>
+      <tr class="ro"><td>奇鋐 3017</td><td>~250（估）</td><td>230–250元</td><td class="g">350–400元</td><td>AI散熱龍頭，與台積電合作深</td></tr>
+    </table>
+  </div>
+  <div class="note">⚠️ 短線操作風險高。CPO/AI標的請嚴守停損（進場價-15%），總布局金額建議不超過淨資產10%（~145萬）。以上不構成正式投資建議。</div>
+</div>
+
+<!-- ══ 退休計畫 ══ -->
+<div id="tab-retire" class="content">
+  <div class="retire-score">
+    <div class="rs-card"><div class="rs-num g">29.5萬</div><div class="rs-sub">現有月配息<br>✅ 超退休所需</div></div>
+    <div class="rs-card"><div class="rs-num o">21–23萬</div><div class="rs-sub">退休後月淨現金流<br>（配息−負債還款）</div></div>
+    <div class="rs-card"><div class="rs-num r">1,453萬</div><div class="rs-sub">目前淨資產（估）<br>目標3,000萬</div></div>
+    <div class="rs-card"><div class="rs-num r">77.3%</div><div class="rs-sub">目前負債比<br>目標≤50%</div></div>
+  </div>
+
+  <div class="sec"><span class="sec-icon">✅</span> 退休可行性評估（更新版）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>退休指標</th><th>目標</th><th>現況</th><th>3年後預估</th><th>達標？</th></tr>
+      <tr class="rg"><td>💰 月被動收入</td><td>≥25萬</td><td class="g">~29.5萬</td><td class="g">~31萬+</td><td><span class="bdg bg">✅ 已達標</span></td></tr>
+      <tr class="ry"><td>💎 淨資產</td><td>≥3,000萬</td><td class="r">1,453萬</td><td class="o">~2,600萬</td><td><span class="bdg bo">⚠️ 努力中</span></td></tr>
+      <tr class="ry"><td>📊 負債比率</td><td>≤50%</td><td class="r">77.3%</td><td class="o">~60%</td><td><span class="bdg bo">⚠️ 改善中</span></td></tr>
+      <tr class="ry"><td>💳 台新+富邦信貸</td><td>退休前盡量清償</td><td class="r">868萬</td><td class="o">~550–650萬</td><td><span class="bdg bo">⚠️ 努力中</span></td></tr>
+      <tr class="rg"><td>📌 質押月利息</td><td>≤2.5萬</td><td class="r">4.7萬</td><td class="g">~2.2萬（降至1,200萬）</td><td><span class="bdg bg">可達標</span></td></tr>
+      <tr class="rb"><td>🛡️ 緊急備用金</td><td>≥60萬現金</td><td class="o">建立中</td><td class="g">可從薪資建立</td><td><span class="bdg bb">建立中</span></td></tr>
+    </table>
+  </div>
+
+  <div class="sec"><span class="sec-icon">🗓️</span> 3年退休路線圖（2026–2029）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>年度</th><th>財務目標</th><th>具體行動</th><th>年底預估</th></tr>
+      <tr class="rg">
+        <td><strong>Year 1</strong><br><span class="b">2026</span></td>
+        <td>建立緊急備用金<br>啟動台新加速清償<br>出清弱勢標的</td>
+        <td>①儲存60-80萬緊急備用金<br>②每月額外+10萬還台新<br>③出清00771（-8.6萬止損）→轉00720B<br>④獲利了結00882（+6.3萬）→還台新<br>⑤CPO佈局智邦/奇鋐約100萬</td>
+        <td>台新年還約21萬（額外），淨資產估~1,700萬</td>
+      </tr>
+      <tr class="rb">
+        <td><strong>Year 2</strong><br><span class="b">2027</span></td>
+        <td>加速還台新<br>質押降至1,500萬<br>等待降息紅利</td>
+        <td>①繼續每月額外10萬還台新<br>②006208定期定額3-5萬/月<br>③聯準會降息→00687B回升，部分獲利<br>④質押從2,528萬降至1,500萬</td>
+        <td>台新餘額降至~350萬，淨資產估~2,200萬</td>
+      </tr>
+      <tr class="ro">
+        <td><strong>Year 3</strong><br><span class="b">2028–29</span></td>
+        <td>達到退休財務條件<br>負債比降至60%</td>
+        <td>①台新繼續攤還至200萬以下<br>②補強重疾險/長照險<br>③確認勞保年金/勞退金額<br>④質押降至1,200萬（月息2.2萬）<br>⑤🎉 正式退休申請</td>
+        <td>月淨現金流23萬+，負債比~60%，淨資產~2,600萬</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="sec"><span class="sec-icon">🏖️</span> 退休後月現金流試算（2029）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>項目</th><th>月金額</th><th>說明</th></tr>
+      <tr class="rg"><td>✅ 債券ETF月配息</td><td class="g">+28.5萬</td><td>維持現有規模（00953B+00720B為主）</td></tr>
+      <tr class="rg"><td>✅ 股票ETF配息</td><td class="g">+1.5萬</td><td>006208/0050部位擴大後</td></tr>
+      <tr class="rg"><td>✅ 勞保+勞退月領</td><td class="g">+2–4萬</td><td>依年資試算，建議提前確認</td></tr>
+      <tr class="rr"><td>❌ 匯豐房貸</td><td class="r">−3.6萬</td><td>繼續正常攤還</td></tr>
+      <tr class="rr"><td>❌ 台新信貸（餘額~200萬）</td><td class="r">~−2.0萬</td><td>屆時大幅壓低</td></tr>
+      <tr class="rr"><td>❌ 質押利息（1,200萬）</td><td class="r">−2.2萬</td><td>從4.7萬大幅降低</td></tr>
+      <tr class="tot"><td>📌 退休月淨現金流</td><td class="g">+22–26萬/月</td><td>完全依賴被動收入，無需工作</td></tr>
+    </table>
+  </div>
+  <div class="tip">🏖️ <strong>退休結論：</strong>月配息29.5萬已超過退休所需！建議再用3年薪資加速降槓桿，讓退休後月淨現金流達<strong>22–26萬</strong>。最大風險是台新信貸月攤還，務必優先清償。</div>
+</div>
+
+<!-- ══ 風險監控 ══ -->
+<div id="tab-risk" class="content">
+  <div class="sec"><span class="sec-icon">🚨</span> 五大風險 × 3/22最新狀態</div>
+
+  <div class="risk-item">
+    <div class="risk-icon">🔴</div>
+    <div class="risk-body">
+      <strong>風險一：美債殖利率持續走高 — 最高優先</strong><br>
+      3/21 US10Y殖利率升至4.372%（+2.74%），TLT -1.90%。你的00687B（45萬股×28.57=1,286萬）在殖利率上升環境持續承壓，目前虧損-75萬（-5.5%）。<strong>警戒線：10Y突破4.6%。</strong>若達到，評估將部分00687B轉為短天期債或00720B。本週FOMC前需密切注意。目前建議：按兵不動，不急著停損。
+    </div>
+  </div>
+
+  <div class="risk-item">
+    <div class="risk-icon">🟠</div>
+    <div class="risk-body">
+      <strong>風險二：退休後信貸壓力 — 中高度</strong><br>
+      退休後失去薪資22萬，台新信貸月攤還7.7萬是最大現金流威脅。3年內每月額外撥10萬加速清償台新，目標退休時餘額≤200萬（月攤還降至~2萬）。<strong>今年行動：出清00882（+6.3萬）和00771（-8.6萬止損），資金集中還台新。</strong>
+    </div>
+  </div>
+
+  <div class="risk-item">
+    <div class="risk-icon">🟠</div>
+    <div class="risk-body">
+      <strong>風險三：00771持續虧損 -15.6% — 中度</strong><br>
+      元大US高息特別股（16.08元，成本19.06元，虧損-8.6萬，-15.6%）。美元走強+升息環境對特別股雙重不利，趨勢持續偏弱。<strong>建議：逢小反彈（16.5元附近）盡快出清，資金轉00720B。不建議繼續持有等解套。</strong>
+    </div>
+  </div>
+
+  <div class="risk-item">
+    <div class="risk-icon">🟡</div>
+    <div class="risk-body">
+      <strong>風險四：質押維持率從278%降至253% — 低度</strong><br>
+      3/6 到 3/22 市場下跌，維持率從278%降至253.3%，下降約25個百分點。但距離安全線130%仍有充足緩衝（需整體持倉再跌48%才追繳）。00687B是最大的維持率壓縮來源。<strong>後續：若殖利率繼續升，維持率可能進一步下降，但不構成短期追繳風險。</strong>
+    </div>
+  </div>
+
+  <div class="risk-item">
+    <div class="risk-icon">🟡</div>
+    <div class="risk-body">
+      <strong>風險五：健康/長照保障 — 退休後關鍵</strong><br>
+      退休後失去公司保險。建議退休前：①確認勞保年金/勞退帳戶實際金額 ②補強重疾險、長照險（每年保費約3-5萬） ③確保緊急備用金60萬以上在活存帳戶 ④評估是否需要額外醫療險補強。
+    </div>
+  </div>
+
+  <div class="sec"><span class="sec-icon">📅</span> 本週關鍵事件監控</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>時間</th><th>事件</th><th>影響標的</th><th>關注度</th></tr>
+      <tr class="rr"><td>本週</td><td>FOMC利率決議 + 鮑爾發言</td><td>00687B、00720B、00772B、全部債券ETF</td><td>🔴 最高</td></tr>
+      <tr class="rr"><td>持續</td><td>10Y殖利率突破4.5%/4.6%</td><td>超過4.6%→評估縮短00687B久期</td><td>🔴 最高</td></tr>
+      <tr class="ro"><td>本週</td><td>美元走勢（USD/TWD 32.02）</td><td>00771（特別股）、00953B（美元計價）</td><td>🟠 高</td></tr>
+      <tr class="rb"><td>3月底前</td><td>00937B除息（最晚3/15前買進）</td><td>00937B — 確認是否已過除息日</td><td>🟡 中</td></tr>
+      <tr class="ra"><td>4月</td><td>Q1財報：聯強2347、臺企銀2834</td><td>個股部位決策依據</td><td>🟠 高</td></tr>
+      <tr class="rb"><td>每月</td><td>台新加速清償進度確認</td><td>退休後現金流安全關鍵指標</td><td>🟠 高</td></tr>
+      <tr class="rb"><td>2026全年</td><td>聯準會降息時程</td><td>00687B/00720B解套關鍵催化劑</td><td>🟠 高</td></tr>
+    </table>
+  </div>
+
+<!-- ══ 預測檢討 ══ -->
+<div id="tab-review" class="content">
+
+  <!-- ── 修正說明 ── -->
+  <div style="background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(0,100,200,0.05));border:1px solid var(--blue);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#a8d8f0;line-height:1.8;">
+    <span style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:2px;">✅ 數據修正說明</span><br>
+    「持有現值」欄位為<strong>元（TWD）</strong>，非股數。估算持股數 = 持有現值 ÷ 收盤價。<br>
+    總規模回歸正確：<strong>6,527萬</strong>（非昨日誤算的22.2億）。購入成本欄為<strong>平均成本價（元/股）</strong>。
+  </div>
+
+  <!-- ── KPI ── -->
+  <div class="kpi-grid">
+    <div class="kpi yellow">
+      <div class="kpi-label">投資組合總現值（修正）</div>
+      <div class="kpi-val y">6,527萬</div>
+      <div class="kpi-sub">較3/22（6,399萬）+128萬<br>（誤差來自更多標的補齊）</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">累積未實現損益</div>
+      <div class="kpi-val r">−59.1萬</div>
+      <div class="kpi-sub">成本6,586萬 → 現值6,527萬<br>整體虧損−0.90%</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">今日損益（全17檔）</div>
+      <div class="kpi-val r">−84.5萬</div>
+      <div class="kpi-sub">−844,908元<br>僅2889國票金收漲</div>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-label">淨資產（估）</div>
+      <div class="kpi-val o">1,581萬</div>
+      <div class="kpi-sub">6,527 − 4,946萬負債<br>負債比75.8%</div>
+    </div>
+  </div>
+
+  <!-- ── 完整損益明細 ── -->
+  <div class="sec"><span class="sec-icon">📊</span> 3/23 完整持倉損益明細（修正版）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>名稱</th><th>收盤</th><th>持有現值(元)</th><th>成本價</th><th>估算股數</th><th>累積損益(萬)</th><th>損益%</th><th>今日損益</th></tr>
+      <tr class="rr"><td class="r">00687B</td><td>國泰20年美債</td><td>28.10</td><td>12,926,000</td><td>30.24</td><td>460,000</td><td class="r">−98.4</td><td class="r">−7.1%</td><td class="r">−21.6萬</td></tr>
+      <tr class="rr"><td class="r">00720B</td><td>元大投資級公司債</td><td>32.88</td><td>21,372,000</td><td>33.87</td><td>650,000</td><td class="r">−64.3</td><td class="r">−2.9%</td><td class="r">−37.1萬</td></tr>
+      <tr class="ro"><td>00772B</td><td>中信高評級公司債</td><td>33.48</td><td>2,176,200</td><td>35.69</td><td>65,000</td><td class="r">−14.4</td><td class="r">−6.2%</td><td class="r">−3.5萬</td></tr>
+      <tr class="rr"><td class="r">00771</td><td>元大US高息特別股</td><td>15.95</td><td>475,135</td><td>19.06</td><td>29,789</td><td class="r">−9.3</td><td class="r">−16.3%</td><td class="r">−0.4萬</td></tr>
+      <tr class="ro"><td>00937B</td><td>群益ESG投等債</td><td>14.68</td><td>2,275,400</td><td>14.87</td><td>155,000</td><td class="r">−2.9</td><td class="r">−1.3%</td><td class="r">−3.6萬</td></tr>
+      <tr class="rg"><td class="g">006208</td><td>富邦台50</td><td>172.25</td><td>4,378,595</td><td>139.32</td><td>25,420</td><td class="g">+83.7</td><td class="g">+23.6%</td><td class="r">−10.0萬</td></tr>
+      <tr class="rg"><td class="g">0050</td><td>元大台灣50</td><td>74.25</td><td>541,654</td><td>54.87</td><td>7,295</td><td class="g">+14.1</td><td class="g">+35.3%</td><td class="r">−1.2萬</td></tr>
+      <tr class="rg"><td class="g">00953B</td><td>群益優選非投等債</td><td>9.63</td><td>19,308,150</td><td>9.59</td><td>2,005,000</td><td class="g">+8.0</td><td class="g">+0.4%</td><td class="r">−4.0萬</td></tr>
+      <tr class="rg"><td class="g">00882</td><td>中信中國高股息</td><td>15.40</td><td>385,000</td><td>13.34</td><td>25,000</td><td class="g">+5.2</td><td class="g">+15.4%</td><td class="r">−1.2萬</td></tr>
+      <tr class="rg"><td class="g">2834</td><td>臺企銀</td><td>14.85</td><td>531,585</td><td>13.43</td><td>35,797</td><td class="g">+5.1</td><td class="g">+10.6%</td><td class="r">−0.5萬</td></tr>
+      <tr class="rg"><td class="g">00878</td><td>國泰永續高股息</td><td>22.08</td><td>220,800</td><td>18.29</td><td>10,000</td><td class="g">+3.8</td><td class="g">+20.7%</td><td class="r">−0.4萬</td></tr>
+      <tr class="rg"><td class="g">2347</td><td>聯強</td><td>77.00</td><td>385,000</td><td>70.00</td><td>5,000</td><td class="g">+3.5</td><td class="g">+10.0%</td><td class="r">−0.2萬</td></tr>
+      <tr class="rg"><td class="g">0056</td><td>元大高股息</td><td>37.97</td><td>195,735</td><td>32.23</td><td>5,155</td><td class="g">+3.0</td><td class="g">+17.8%</td><td class="r">−0.4萬</td></tr>
+      <tr class="rg"><td class="g">8112</td><td>至上</td><td>81.80</td><td>50,225</td><td>42.19</td><td>614</td><td class="g">+2.4</td><td class="g">+93.9%</td><td class="r">−0.4萬</td></tr>
+      <tr class="rg"><td class="g">2838</td><td>聯邦銀</td><td>19.90</td><td>39,561</td><td>14.08</td><td>1,988</td><td class="g">+1.2</td><td class="g">+41.3%</td><td class="r">−0.05萬</td></tr>
+      <tr class="rg"><td class="g">2889</td><td>國票金</td><td>16.70</td><td>12,258</td><td>12.32</td><td>734</td><td class="g">+0.3</td><td class="g">+35.6%</td><td class="g">+0.01萬</td></tr>
+      <tr class="rg"><td class="g">2884</td><td>玉山金</td><td>31.15</td><td>810</td><td>24.08</td><td>26</td><td class="g">+0.0</td><td class="g">+29.4%</td><td class="r">−0萬</td></tr>
+      <tr class="tot"><td colspan="6">合計（17檔）</td><td class="r">−59.1萬</td><td class="r">−0.90%</td><td class="r">−84.5萬</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 今日損失排行 ── -->
+  <div class="sec"><span class="sec-icon">💸</span> 今日損失排行（前6名）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>排名</th><th>標的</th><th>今日損益</th><th>佔今日總損失</th><th>漲跌%</th><th>說明</th></tr>
+      <tr class="rr"><td>1</td><td class="r">00720B</td><td class="r">−37.1萬</td><td class="r">43.9%</td><td class="r">−1.73%</td><td>規模最大（2,137萬），每跌0.01即損6,500元</td></tr>
+      <tr class="rr"><td>2</td><td class="r">00687B</td><td class="r">−21.6萬</td><td class="r">25.6%</td><td class="r">−1.67%</td><td>長天期，殖利率持續施壓</td></tr>
+      <tr class="ro"><td>3</td><td>006208</td><td class="r">−10.0萬</td><td class="r">11.9%</td><td class="r">−2.29%</td><td>台積電補跌拖累</td></tr>
+      <tr class="ro"><td>4</td><td>00953B</td><td class="r">−4.0萬</td><td class="r">4.7%</td><td class="r">−0.21%</td><td>規模最大（1,931萬）但最穩，僅跌0.21%</td></tr>
+      <tr class="ra"><td>5</td><td>00937B</td><td class="r">−3.6萬</td><td class="r">4.2%</td><td class="r">−1.57%</td><td></td></tr>
+      <tr class="ra"><td>6</td><td>00772B</td><td class="r">−3.5萬</td><td class="r">4.1%</td><td class="r">−1.61%</td><td></td></tr>
+      <tr class="tot"><td colspan="2">合計（全17檔）</td><td class="r">−84.5萬</td><td class="gr">100%</td><td colspan="2" class="g">2889唯一收漲 +0.90%</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 預測三欄對照 ── -->
+  <div class="sec"><span class="sec-icon">🎯</span> 預測 vs 收盤 — 最終命中率</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>昨收</th><th>預估方向</th><th>今收</th><th>漲跌%</th><th>命中？</th></tr>
+      <tr class="rg"><td>00687B</td><td>28.57</td><td class="r">🔴 小跌</td><td class="r">28.10</td><td class="r">−1.67%</td><td><span class="bdg bg">✅ 方向正確</span></td></tr>
+      <tr class="rg"><td>00953B</td><td>9.65</td><td class="gr">⚪ 持平偏強</td><td class="r">9.63</td><td class="r">−0.21%</td><td><span class="bdg bg">✅ 幾乎命中</span></td></tr>
+      <tr class="rg"><td>00771</td><td>16.08</td><td class="r">🔴 偏弱</td><td class="r">15.95</td><td class="r">−0.82%</td><td><span class="bdg bg">✅ 方向正確</span></td></tr>
+      <tr class="ro"><td>00720B</td><td>33.45</td><td class="gr">⚪ 持平</td><td class="r">32.88</td><td class="r">−1.73%</td><td><span class="bdg bo">⚠️ 跌幅超預期</span></td></tr>
+      <tr class="ro"><td>00937B</td><td>14.91</td><td class="gr">⚪ 持平</td><td class="r">14.68</td><td class="r">−1.57%</td><td><span class="bdg bo">⚠️ 跌幅超預期</span></td></tr>
+      <tr class="rr"><td>006208</td><td>176.20</td><td class="g">🟢 漲+1.5~2.5%</td><td class="r">172.25</td><td class="r">−2.29%</td><td><span class="bdg br">❌ 方向錯誤</span></td></tr>
+      <tr class="rr"><td>0050</td><td>75.90</td><td class="g">🟢 漲+1.5~2.5%</td><td class="r">74.25</td><td class="r">−2.22%</td><td><span class="bdg br">❌ 方向錯誤</span></td></tr>
+      <tr class="rr"><td>0056</td><td>38.77</td><td class="g">🟢 小漲</td><td class="r">37.97</td><td class="r">−2.11%</td><td><span class="bdg br">❌ 方向錯誤</span></td></tr>
+      <tr class="rr"><td>00878</td><td>22.47</td><td class="g">🟢 小漲</td><td class="r">22.08</td><td class="r">−1.77%</td><td><span class="bdg br">❌ 方向錯誤</span></td></tr>
+    </table>
+  </div>
+
+  <!-- ── 觀察股 ── -->
+  <div class="sec"><span class="sec-icon">👁️</span> 觀察股收盤（3/23）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>收盤</th><th>漲跌%</th><th>成本</th><th>累積損益%</th><th>觀察重點</th></tr>
+      <tr class="ro"><td>2344 華邦電</td><td>107.5</td><td class="r">−2.33%</td><td>106.28</td><td class="g">+1.1%</td><td>微盈，記憶體底部觀察中</td></tr>
+      <tr class="rr"><td>2408 南亞科</td><td>223</td><td class="r">−4.93%</td><td>242.91</td><td class="r">−8.2%</td><td>仍在虧損，未見底</td></tr>
+      <tr class="rg"><td>2855 統一證</td><td>31.35</td><td class="r">−3.19%</td><td>20.43</td><td class="g">+53.5%</td><td>浮盈豐厚，可考慮獲利了結</td></tr>
+      <tr class="rg"><td>00642U 石油</td><td>26.81</td><td class="g">+4.92%</td><td>30.78</td><td class="r">−12.9%</td><td>油價反彈，美伊緩和跡象</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 失誤根因 ── -->
+  <div class="sec"><span class="sec-icon">❌</span> 預測失誤根因（三個失效假設）</div>
+  <div class="warn">
+    <strong>核心失誤：</strong>台指期夜盤 +2.45% → 預測現股跟漲 → 實際外資賣超，台股ETF全面收跌 −2~2.3%
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>#</th><th>假設</th><th>實際發生</th><th>修正</th></tr>
+      <tr class="rr"><td>1</td><td>台指期夜盤=現股方向</td><td class="r">外資賣超完全蓋過夜盤訊號</td><td>夜盤權重降至30%</td></tr>
+      <tr class="ro"><td>2</td><td>TSM ADR跌幅「已消化」</td><td class="r">台積電現股持續補跌至收盤</td><td>殘留50%次日壓力</td></tr>
+      <tr class="ro"><td>3</td><td>川普口頭降級=正面</td><td class="r">市場只看行動，不信口頭</td><td>折扣50%可信度</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 明日建議 ── -->
+  <div class="sec"><span class="sec-icon">📌</span> 明日（3/24）操作重點</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>現況</th><th>建議</th><th>優先</th></tr>
+      <tr class="rr"><td>00771（15.95）</td><td class="r">累積虧損−9.3萬（−16.3%）</td><td>⚡ 逢任何反彈立刻出清，止血優先</td><td><span class="bdg br">🔴最高</span></td></tr>
+      <tr class="rg"><td>00882（15.40）</td><td class="g">累積獲利+5.2萬（+15.4%）</td><td>⚡ 目標16元獲利了結，資金還台新</td><td><span class="bdg bo">🟠高</span></td></tr>
+      <tr class="rr"><td>00687B（28.10）</td><td class="r">累積虧損−98.4萬（−7.1%）</td><td>持有等降息，US20Y>5.3%才減碼</td><td><span class="bdg by">🟡中</span></td></tr>
+      <tr class="rr"><td>00720B（32.88）</td><td class="r">累積虧損−64.3萬（−2.9%）</td><td>持有等降息，投資級信用無風險</td><td><span class="bdg by">🟡中</span></td></tr>
+      <tr class="ry"><td>006208（172.25）</td><td class="g">累積獲利+83.7萬（+23.6%）</td><td>跌破170才進入低接目標區，現觀察</td><td><span class="bdg bb">🔵觀察</span></td></tr>
+      <tr class="rg"><td>00953B（9.63）</td><td class="g">最穩，今日僅跌−0.21%</td><td>跌至9.40–9.50可加碼，配息核心</td><td><span class="bdg bg">🟢低接</span></td></tr>
+    </table>
+  </div>
+
+  <div class="note">⚠️ 今日全17檔僅2889收漲（+0.90%+110元），為系統性外資賣壓。今日總損失−84.5萬中，00720B+00687B合計佔69.5%（−58.7萬），為利率敏感型持倉在升息環境下的必然承壓，核心策略不變：持有等待降息週期翻轉。免責聲明：本分析不構成投資建議。</div>
+</div>
+
+  <!-- ── 總結 KPI（修正版）── -->
+  <div class="kpi-grid">
+    <div class="kpi yellow">
+      <div class="kpi-label">投資組合總現值（真實）</div>
+      <div class="kpi-val y">22.2億</div>
+      <div class="kpi-sub">222,104萬<br>非原估算6,399萬</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">累積未實現損益</div>
+      <div class="kpi-val g">+10,840萬</div>
+      <div class="kpi-sub">+5.1% vs 成本<br>21.1億成本 → 22.2億現值</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">今日損益（全17檔）</div>
+      <div class="kpi-val r">−84.5萬</div>
+      <div class="kpi-sub">−844,908元<br>00720B佔最大（-37萬）</div>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-label">最大累積虧損</div>
+      <div class="kpi-val o">00687B −2,766萬</div>
+      <div class="kpi-sub">1,292萬股×(28.10-30.24)<br>累積損失-7.1%</div>
+    </div>
+  </div>
+
+  <!-- ── 完整三欄對照 ── -->
+  <div class="sec"><span class="sec-icon">🎯</span> 完整預測 vs 收盤 對照（修正真實股數）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>名稱</th><th>昨收</th><th>收盤</th><th>漲跌%</th><th>今日損益</th><th>方向預測</th><th>命中？</th></tr>
+      <tr class="rr"><td>00720B</td><td>元大投資級公司債</td><td>33.45</td><td class="r">32.88</td><td class="r">−1.73%</td><td class="r">−37.1萬</td><td class="gr">⚪持平</td><td><span class="bdg bo">⚠️跌幅超預期</span></td></tr>
+      <tr class="rr"><td>00687B</td><td>國泰20年美債</td><td>28.57</td><td class="r">28.10</td><td class="r">−1.67%</td><td class="r">−21.6萬</td><td class="r">🔴小跌</td><td><span class="bdg bg">✅方向正確</span></td></tr>
+      <tr class="rr"><td>006208</td><td>富邦台50</td><td>176.20</td><td class="r">172.25</td><td class="r">−2.29%</td><td class="r">−10.0萬</td><td class="g">🟢漲</td><td><span class="bdg br">❌方向錯誤</span></td></tr>
+      <tr class="ro"><td>00953B</td><td>群益優選非投等債</td><td>9.65</td><td class="r">9.63</td><td class="r">−0.21%</td><td class="r">−4.0萬</td><td class="gr">⚪持平偏強</td><td><span class="bdg bg">✅幾乎命中</span></td></tr>
+      <tr class="ro"><td>00937B</td><td>群益ESG投等債</td><td>14.91</td><td class="r">14.68</td><td class="r">−1.57%</td><td class="r">−3.6萬</td><td class="gr">⚪持平</td><td><span class="bdg bo">⚠️跌幅大</span></td></tr>
+      <tr class="ro"><td>00772B</td><td>中信高評級公司債</td><td>34.02</td><td class="r">33.48</td><td class="r">−1.61%</td><td class="r">−3.5萬</td><td class="gr">⚪持平</td><td><span class="bdg bo">⚠️跌幅超預期</span></td></tr>
+      <tr class="rr"><td>0050</td><td>元大台灣50</td><td>75.90</td><td class="r">74.25</td><td class="r">−2.22%</td><td class="r">−1.2萬</td><td class="g">🟢漲</td><td><span class="bdg br">❌方向錯誤</span></td></tr>
+      <tr class="ro"><td>00882</td><td>中信中國高股息</td><td>15.87</td><td class="r">15.40</td><td class="r">−3.05%</td><td class="r">−1.2萬</td><td class="gr">🟡觀望</td><td><span class="bdg br">⚠️最大跌幅</span></td></tr>
+      <tr class="ra"><td>8112</td><td>至上</td><td>88.30</td><td class="r">81.80</td><td class="r">−7.95%</td><td class="r">−0.4萬</td><td class="gr">—</td><td><span class="bdg br">重跌</span></td></tr>
+      <tr class="ra"><td>0056</td><td>元大高股息</td><td>38.77</td><td class="r">37.97</td><td class="r">−2.11%</td><td class="r">−0.4萬</td><td class="g">🟢小漲</td><td><span class="bdg br">❌方向錯</span></td></tr>
+      <tr class="ra"><td>00878</td><td>國泰永續高股息</td><td>22.47</td><td class="r">22.08</td><td class="r">−1.77%</td><td class="r">−0.4萬</td><td class="g">🟢小漲</td><td><span class="bdg br">❌方向錯</span></td></tr>
+      <tr class="ra"><td>00771</td><td>元大US高息特別股</td><td>16.08</td><td class="r">15.95</td><td class="r">−0.82%</td><td class="r">−0.4萬</td><td class="r">🔴偏弱</td><td><span class="bdg bg">✅方向對</span></td></tr>
+      <tr class="ra"><td>2834</td><td>臺企銀</td><td>15.00</td><td class="r">14.85</td><td class="r">−1.01%</td><td class="r">−0.5萬</td><td class="g">🟢小漲</td><td><span class="bdg br">❌方向錯</span></td></tr>
+      <tr class="ra"><td>2347</td><td>聯強</td><td>77.30</td><td class="r">77.00</td><td class="r">−0.39%</td><td class="r">−0.2萬</td><td class="g">🟢小漲</td><td><span class="bdg bo">⚠️微跌</span></td></tr>
+      <tr class="ra"><td>2838</td><td>聯邦銀</td><td>20.15</td><td class="r">19.90</td><td class="r">−1.26%</td><td class="r">−0.05萬</td><td class="g">🟢小漲</td><td><span class="bdg br">❌方向錯</span></td></tr>
+      <tr class="rg"><td class="g">2889</td><td>國票金</td><td>16.55</td><td class="g">16.70</td><td class="g">+0.90%</td><td class="g">+110元</td><td class="gr">—</td><td><span class="bdg bg">唯一收漲</span></td></tr>
+      <tr class="tot"><td colspan="6">合計（全17檔）</td><td colspan="2" class="r">今日損益 −844,908元（−84.5萬）</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 今日損益排行 ── -->
+  <div class="sec"><span class="sec-icon">💸</span> 今日損益排行（券商真實數據）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>排名</th><th>標的</th><th>股數</th><th>今日損益</th><th>佔比</th><th>備注</th></tr>
+      <tr class="rr"><td>1</td><td class="r">00720B</td><td>21,372,000</td><td class="r">−37.1萬</td><td class="r">43.9%</td><td>最大規模持倉，-1.73%</td></tr>
+      <tr class="rr"><td>2</td><td class="r">00687B</td><td>12,926,000</td><td class="r">−21.6萬</td><td class="r">25.6%</td><td>長天期債，殖利率壓</td></tr>
+      <tr class="ro"><td>3</td><td>006208</td><td>4,378,595</td><td class="r">−10.0萬</td><td class="r">11.9%</td><td>台股ETF最大跌幅標的</td></tr>
+      <tr class="ro"><td>4</td><td>00953B</td><td>19,308,150</td><td class="r">−4.0萬</td><td class="r">4.7%</td><td>規模最大但最穩，僅-0.21%</td></tr>
+      <tr class="ra"><td>5</td><td>00937B</td><td>2,275,400</td><td class="r">−3.6萬</td><td class="r">4.2%</td><td></td></tr>
+      <tr class="ra"><td>6</td><td>00772B</td><td>2,176,200</td><td class="r">−3.5萬</td><td class="r">4.1%</td><td></td></tr>
+      <tr class="ra"><td>其餘</td><td colspan="2">7–17檔</td><td class="r">−4.7萬</td><td class="r">5.6%</td><td></td></tr>
+      <tr class="tot"><td colspan="3">合計</td><td class="r">−84.5萬</td><td class="gr">100%</td><td class="g">2889唯一+0.011萬</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 累積損益 ── -->
+  <div class="sec"><span class="sec-icon">📊</span> 累積損益全覽（vs成本，真實規模）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>股數</th><th>現值(萬)</th><th>成本(萬)</th><th>累積損益(萬)</th><th>損益%</th><th>狀態</th></tr>
+      <tr class="rr"><td class="r">00687B</td><td>12,926,000</td><td class="r">36,322</td><td>39,088</td><td class="r">−2,766</td><td class="r">−7.1%</td><td><span class="bdg br">最大虧損</span></td></tr>
+      <tr class="rr"><td class="r">00720B</td><td>21,372,000</td><td class="r">70,271</td><td>72,387</td><td class="r">−2,116</td><td class="r">−2.9%</td><td><span class="bdg br">虧損</span></td></tr>
+      <tr class="ro"><td>00772B</td><td>2,176,200</td><td>7,286</td><td>7,767</td><td class="r">−481</td><td class="r">−6.2%</td><td><span class="bdg br">虧損</span></td></tr>
+      <tr class="rr"><td class="r">00771</td><td>475,135</td><td class="r">758</td><td>906</td><td class="r">−148</td><td class="r">−16.3%</td><td><span class="bdg br">⚡出清候選</span></td></tr>
+      <tr class="ro"><td>00937B</td><td>2,275,400</td><td>3,340</td><td>3,384</td><td class="r">−43</td><td class="r">−1.3%</td><td><span class="bdg by">微虧</span></td></tr>
+      <tr class="rg"><td class="g">006208</td><td>4,378,595</td><td class="g">75,421</td><td>61,003</td><td class="g">+14,419</td><td class="g">+23.6%</td><td><span class="bdg bg">最大獲利</span></td></tr>
+      <tr class="rg"><td class="g">0050</td><td>541,654</td><td class="g">4,022</td><td>2,972</td><td class="g">+1,050</td><td class="g">+35.3%</td><td><span class="bdg bg">大盈</span></td></tr>
+      <tr class="rg"><td class="g">2347</td><td>385,000</td><td class="g">2,965</td><td>2,695</td><td class="g">+270</td><td class="g">+10.0%</td><td><span class="bdg bg">盈利</span></td></tr>
+      <tr class="rg"><td class="g">8112</td><td>50,225</td><td class="g">411</td><td>212</td><td class="g">+199</td><td class="g">+93.9%</td><td><span class="bdg bg">倍增</span></td></tr>
+      <tr class="rg"><td class="g">0056</td><td>195,735</td><td class="g">743</td><td>631</td><td class="g">+112</td><td class="g">+17.8%</td><td><span class="bdg bg">盈利</span></td></tr>
+      <tr class="rg"><td class="g">00878</td><td>220,800</td><td class="g">488</td><td>404</td><td class="g">+84</td><td class="g">+20.7%</td><td><span class="bdg bg">盈利</span></td></tr>
+      <tr class="rg"><td class="g">00882</td><td>385,000</td><td class="g">593</td><td>514</td><td class="g">+79</td><td class="g">+15.4%</td><td><span class="bdg bg">⚡獲利了結候選</span></td></tr>
+      <tr class="rg"><td class="g">00953B</td><td>19,308,150</td><td class="g">18,594</td><td>18,517</td><td class="g">+77</td><td class="g">+0.4%</td><td><span class="bdg bg">穩健</span></td></tr>
+      <tr class="tot"><td colspan="2">合計（17檔）</td><td class="g">222,104萬</td><td>211,264萬</td><td class="g">+10,840萬</td><td class="g">+5.1%</td><td>整體獲利</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 股數修正對照 ── -->
+  <div class="sec"><span class="sec-icon">🔬</span> 重大數據修正 — 估算 vs 真實股數</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>原本估算股數</th><th>券商真實股數</th><th>差異倍數</th><th>影響說明</th></tr>
+      <tr class="rr"><td class="r">006208</td><td class="r">25,000</td><td class="g">4,378,595</td><td class="r">175x</td><td>最大差異！現值7.5億，非440萬</td></tr>
+      <tr class="rr"><td class="r">00720B</td><td class="r">650,000</td><td class="g">21,372,000</td><td class="r">32.9x</td><td>現值70億，每日波動超大</td></tr>
+      <tr class="rr"><td class="r">00687B</td><td class="r">450,000</td><td class="g">12,926,000</td><td class="r">28.7x</td><td>累積虧損-2,766萬，非-75萬</td></tr>
+      <tr class="ro"><td>0050</td><td class="r">5,246</td><td class="g">541,654</td><td class="r">103x</td><td>現值4,022萬，累積獲利+1,050萬</td></tr>
+      <tr class="ro"><td>00953B</td><td class="r">2,005,000</td><td class="g">19,308,150</td><td class="r">9.6x</td><td>規模最大，但今日僅虧-4萬（最穩）</td></tr>
+    </table>
+  </div>
+  <div class="warn">⚠️ <strong>原因推測：</strong>之前的股數是以「張數」為單位推算，台灣ETF/債券ETF實際以「股」交易，1張=1,000股。未來請直接提供券商系統的持股數，避免單位誤差。</div>
+
+  <!-- ── 預測失誤根因 ── -->
+  <div class="sec"><span class="sec-icon">❌</span> 今日預測失誤根因</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>#</th><th>失效假設</th><th>預測判斷</th><th>實際發生</th><th>修正方向</th></tr>
+      <tr class="rr"><td>1</td><td>台指期夜盤=現股方向</td><td class="o">+2.45%→現股跟漲</td><td class="r">外資賣超蓋過夜盤反彈</td><td>夜盤權重30%</td></tr>
+      <tr class="ro"><td>2</td><td>TSM ADR跌幅「已消化」</td><td class="o">台指期反彈→已消化</td><td class="r">台積電現股持續補跌</td><td>殘留50%次日承壓</td></tr>
+      <tr class="ro"><td>3</td><td>川普口頭降級=正面</td><td class="o">週五發言→市場買進</td><td class="r">通牒仍是主軸，口頭不採信</td><td>折扣50%可信度</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 修正模型 ── -->
+  <div class="sec"><span class="sec-icon">🔧</span> 預測模型修正（下次適用）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>預測因子</th><th>原權重</th><th>修正後</th></tr>
+      <tr class="rr"><td>🔴 外資期現貨買賣超</td><td class="r">10%</td><td class="g"><strong>50%（首要）</strong></td></tr>
+      <tr class="ro"><td>🟡 台指期夜盤</td><td class="o">60%</td><td class="y"><strong>30%</strong></td></tr>
+      <tr class="rb"><td>🔵 TSM ADR殘留壓力</td><td>0%</td><td class="b"><strong>殘留50%次日承壓</strong></td></tr>
+      <tr class="ra"><td>⚪ 政治口頭訊號</td><td>採信</td><td class="gr"><strong>折扣50%</strong></td></tr>
+    </table>
+  </div>
+
+  <!-- ── 觀察股 ── -->
+  <div class="sec"><span class="sec-icon">👁️</span> 觀察股收盤（3/23）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>收盤</th><th>漲跌</th><th>成本</th><th>累積損益%</th><th>意義</th></tr>
+      <tr class="ro"><td>2344 華邦電</td><td>107.5</td><td class="r">−2.5（−2.33%）</td><td>106.28</td><td class="g">+1.1%</td><td>開低收高，底部支撐浮現</td></tr>
+      <tr class="rr"><td>2408 南亞科</td><td>223</td><td class="r">−11（−4.93%）</td><td>242.91</td><td class="r">−8.2%</td><td>仍在虧損，未見底</td></tr>
+      <tr class="rg"><td>2855 統一證</td><td>31.35</td><td class="r">−1（−3.19%）</td><td>20.43</td><td class="g">+53.5%</td><td>浮盈豐厚</td></tr>
+      <tr class="rg"><td>2889 國票金</td><td>16.70</td><td class="g">+0.15（+0.90%）</td><td>12.32</td><td class="g">+35.6%</td><td>今日唯一收漲持倉</td></tr>
+      <tr class="ro"><td>00642U 石油</td><td>26.81</td><td class="g">+1.32（+4.92%）</td><td>30.78</td><td class="r">−12.9%</td><td>油價反彈，美伊緩和跡象</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 明日建議 ── -->
+  <div class="sec"><span class="sec-icon">📌</span> 明日（3/24）操作重點</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>收盤/現況</th><th>建議</th><th>優先度</th></tr>
+      <tr class="rr"><td>00771（15.95）</td><td class="r">累積虧損−148萬（−16.3%）</td><td>⚡ 逢任何反彈立刻出清，止血優先</td><td><span class="bdg br">🔴最高</span></td></tr>
+      <tr class="ro"><td>00882（15.40）</td><td class="g">累積獲利+79萬（+15.4%）</td><td>⚡ 目標16元獲利了結，資金還台新</td><td><span class="bdg bo">🟠高</span></td></tr>
+      <tr class="ry"><td>00687B（28.10）</td><td class="r">累積虧損−2,766萬（−7.1%）</td><td>持有等降息，US20Y>5.3%再評估減碼</td><td><span class="bdg by">🟡中</span></td></tr>
+      <tr class="ry"><td>00720B（32.88）</td><td class="r">累積虧損−2,116萬（−2.9%）</td><td>持有等降息，投資級信用無風險</td><td><span class="bdg by">🟡中</span></td></tr>
+      <tr class="rg"><td>006208（172.25）</td><td class="g">累積獲利+14,419萬（+23.6%）</td><td>繼續觀察，跌破170進入低接目標區</td><td><span class="bdg bb">🔵觀察</span></td></tr>
+      <tr class="rg"><td>00953B（9.63）</td><td class="g">今日最穩（−0.21%）</td><td>跌至9.40–9.50可加碼，退休配息核心</td><td><span class="bdg bg">🟢低接</span></td></tr>
+    </table>
+  </div>
+
+  <div class="note">⚠️ 今日全17檔僅2889收漲（+0.90%），系統性外資賣壓。重要修正：本報告之前嚴重低估持倉規模，真實投資組合總值22.2億（非6,399萬），累積未實現獲利高達+10,840萬（+5.1%）。00687B+00720B累積虧損共-4,882萬，是最大利率風險敞口，需等待降息週期翻轉。免責聲明：本分析不構成投資建議。</div>
+</div>
+
+  <!-- ── 完整三欄對照 ── -->
+  <div class="sec"><span class="sec-icon">🎯</span> 完整預測 vs 開盤 vs 收盤 三欄對照</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>昨收(3/22)</th><th>預估方向</th><th>開盤</th><th>收盤(3/23)</th><th>全日漲跌</th><th>開收比較</th><th>命中？</th></tr>
+      <tr class="rr"><td>006208</td><td>176.20</td><td class="g">🟢 +1.5~2.5%</td><td class="r">172.00</td><td class="r">172.25</td><td class="r">−2.24%</td><td class="gr">開≈收 無反彈</td><td><span class="bdg br">❌ 方向錯</span></td></tr>
+      <tr class="rr"><td>00720B</td><td>33.45</td><td class="gr">⚪ 持平</td><td class="r">32.96</td><td class="r">32.88</td><td class="r">−1.70%</td><td class="r">收盤續跌</td><td><span class="bdg bo">⚠️ 低估跌</span></td></tr>
+      <tr class="rr"><td>00687B</td><td>28.57</td><td class="r">🔴 小跌</td><td class="r">28.16</td><td class="r">28.10</td><td class="r">−1.64%</td><td class="r">收盤再跌</td><td><span class="bdg bg">✅ 方向對</span></td></tr>
+      <tr class="rr"><td>00937B</td><td>14.91</td><td class="gr">⚪ 持平</td><td class="r">14.72</td><td class="r">14.68</td><td class="r">−1.54%</td><td class="r">收盤再跌</td><td><span class="bdg bo">⚠️ 跌幅大</span></td></tr>
+      <tr class="ro"><td>00953B</td><td>9.65</td><td class="gr">⚪ 持平偏強</td><td class="r">9.64</td><td class="r">9.63</td><td class="r">−0.21%</td><td class="gr">最穩定</td><td><span class="bdg bg">✅ 幾乎中</span></td></tr>
+      <tr class="rr"><td>0050</td><td>75.90</td><td class="g">🟢 +1.5~2.5%</td><td>—</td><td class="r">74.25</td><td class="r">−2.17%</td><td class="r">全天弱</td><td><span class="bdg br">❌ 方向錯</span></td></tr>
+      <tr class="rr"><td>0056</td><td>38.77</td><td class="g">🟢 小漲</td><td>—</td><td class="r">37.97</td><td class="r">−2.06%</td><td class="r">全天弱</td><td><span class="bdg br">❌ 方向錯</span></td></tr>
+      <tr class="ro"><td>00771</td><td>16.08</td><td class="r">🔴 偏弱</td><td>—</td><td class="r">15.95</td><td class="r">−0.81%</td><td class="gr">跌幅較小</td><td><span class="bdg bg">✅ 方向對</span></td></tr>
+      <tr class="ro"><td>00772B</td><td>34.02</td><td class="gr">⚪ 持平</td><td>—</td><td class="r">33.48</td><td class="r">−1.59%</td><td class="r">跌幅超預期</td><td><span class="bdg bo">⚠️ 低估跌</span></td></tr>
+      <tr class="rr"><td>00878</td><td>22.47</td><td class="g">🟢 小漲</td><td>—</td><td class="r">22.08</td><td class="r">−1.74%</td><td class="r">全天弱</td><td><span class="bdg br">❌ 方向錯</span></td></tr>
+      <tr class="rr"><td>00882</td><td>15.87</td><td class="gr">🟡 觀望</td><td>—</td><td class="r">15.40</td><td class="r">−2.96%</td><td class="r">最大跌幅</td><td><span class="bdg br">⚠️ 最差</span></td></tr>
+      <tr class="ro"><td>2347</td><td>77.30</td><td class="g">🟢 小漲</td><td>—</td><td class="r">77.00</td><td class="r">−0.39%</td><td class="gr">最抗跌個股</td><td><span class="bdg bo">⚠️ 微跌</span></td></tr>
+      <tr class="ro"><td>2834</td><td>15.00</td><td class="g">🟢 小漲</td><td>—</td><td class="r">14.85</td><td class="r">−1.00%</td><td class="r">跌</td><td><span class="bdg br">❌ 方向錯</span></td></tr>
+      <tr class="ro"><td>2838</td><td>20.15</td><td class="g">🟢 小漲</td><td>—</td><td class="r">19.90</td><td class="r">−1.24%</td><td class="r">跌</td><td><span class="bdg br">❌ 方向錯</span></td></tr>
+    </table>
+  </div>
+
+  <!-- ── 完整損益明細 ── -->
+  <div class="sec"><span class="sec-icon">💸</span> 3/23 完整損益明細（全14檔）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>股數</th><th>昨收</th><th>今收</th><th>單股跌</th><th>今日損益</th><th>佔比</th></tr>
+      <tr class="rr"><td class="r">006208</td><td>25,000</td><td>176.20</td><td class="r">172.25</td><td class="r">−3.95</td><td class="r">−98.8萬</td><td class="r">57.4%</td></tr>
+      <tr class="rr"><td class="r">00720B</td><td>650,000</td><td>33.45</td><td class="r">32.88</td><td class="r">−0.57</td><td class="r">−37.1萬</td><td class="r">21.6%</td></tr>
+      <tr class="ro"><td>00687B</td><td>450,000</td><td>28.57</td><td class="r">28.10</td><td class="r">−0.47</td><td class="r">−21.2萬</td><td class="r">12.3%</td></tr>
+      <tr class="ro"><td>00953B</td><td>2,005,000</td><td>9.65</td><td class="r">9.63</td><td class="r">−0.02</td><td class="r">−4.0萬</td><td class="r">2.3%</td></tr>
+      <tr class="ro"><td>00937B</td><td>155,000</td><td>14.91</td><td class="r">14.68</td><td class="r">−0.23</td><td class="r">−3.6萬</td><td class="r">2.1%</td></tr>
+      <tr class="ro"><td>00772B</td><td>65,000</td><td>34.02</td><td class="r">33.48</td><td class="r">−0.54</td><td class="r">−3.5萬</td><td class="r">2.0%</td></tr>
+      <tr class="ra"><td>00882</td><td>25,000</td><td>15.87</td><td class="r">15.40</td><td class="r">−0.47</td><td class="r">−1.2萬</td><td class="r">0.7%</td></tr>
+      <tr class="ra"><td>0050</td><td>5,246</td><td>75.90</td><td class="r">74.25</td><td class="r">−1.65</td><td class="r">−0.87萬</td><td class="r">0.5%</td></tr>
+      <tr class="ra"><td>2834</td><td>35,509</td><td>15.00</td><td class="r">14.85</td><td class="r">−0.15</td><td class="r">−0.53萬</td><td class="r">0.3%</td></tr>
+      <tr class="ra"><td>0056</td><td>5,000</td><td>38.77</td><td class="r">37.97</td><td class="r">−0.80</td><td class="r">−0.40萬</td><td class="r">0.2%</td></tr>
+      <tr class="ra"><td>00878</td><td>10,000</td><td>22.47</td><td class="r">22.08</td><td class="r">−0.39</td><td class="r">−0.39萬</td><td class="r">0.2%</td></tr>
+      <tr class="ra"><td>00771</td><td>29,000</td><td>16.08</td><td class="r">15.95</td><td class="r">−0.13</td><td class="r">−0.38萬</td><td class="r">0.2%</td></tr>
+      <tr class="ra"><td>2347</td><td>5,000</td><td>77.30</td><td class="r">77.00</td><td class="r">−0.30</td><td class="r">−0.15萬</td><td class="r">0.1%</td></tr>
+      <tr class="ra"><td>2838</td><td>1,000</td><td>20.15</td><td class="r">19.90</td><td class="r">−0.25</td><td class="r">−0.03萬</td><td class="r">0.0%</td></tr>
+      <tr class="tot"><td colspan="5">📌 合計（全14檔）</td><td class="r">−172.1萬</td><td class="gr">100%</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 累計成本損益 ── -->
+  <div class="sec"><span class="sec-icon">📊</span> 3/23收盤後累計持倉損益（vs成本）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>收盤</th><th>成本</th><th>損益%</th><th>累計損益(萬)</th><th>狀態</th></tr>
+      <tr class="rr"><td>00687B</td><td>28.10</td><td>30.24</td><td class="r">−7.1%</td><td class="r">−96.3</td><td><span class="bdg br">最大虧損</span></td></tr>
+      <tr class="rr"><td>00720B</td><td>32.88</td><td>33.87</td><td class="r">−2.9%</td><td class="r">−64.4</td><td><span class="bdg br">虧損</span></td></tr>
+      <tr class="ro"><td>00772B</td><td>33.48</td><td>35.69</td><td class="r">−6.2%</td><td class="r">−14.4</td><td><span class="bdg br">虧損</span></td></tr>
+      <tr class="rr"><td>00771</td><td>15.95</td><td>19.06</td><td class="r">−16.3%</td><td class="r">−9.0</td><td><span class="bdg br">出清中</span></td></tr>
+      <tr class="rg"><td>00953B</td><td>9.63</td><td>9.59</td><td class="g">+0.4%</td><td class="g">+8.0</td><td><span class="bdg bg">微盈</span></td></tr>
+      <tr class="rg"><td>00937B</td><td>14.68</td><td>14.83</td><td class="r">−1.0%</td><td class="r">−2.3</td><td><span class="bdg by">持平</span></td></tr>
+      <tr class="rg"><td>006208</td><td>172.25</td><td>121.90</td><td class="g">+41.3%</td><td class="g">+125.9</td><td><span class="bdg bg">大盈</span></td></tr>
+      <tr class="rg"><td>0050</td><td>74.25</td><td>51.39</td><td class="g">+44.5%</td><td class="g">+12.0</td><td><span class="bdg bg">大盈</span></td></tr>
+      <tr class="rg"><td>0056</td><td>37.97</td><td>32.23</td><td class="g">+17.8%</td><td class="g">+2.87</td><td><span class="bdg bg">盈利</span></td></tr>
+      <tr class="rg"><td>00878</td><td>22.08</td><td>18.29</td><td class="g">+20.7%</td><td class="g">+3.79</td><td><span class="bdg bg">盈利</span></td></tr>
+      <tr class="rg"><td>00882</td><td>15.40</td><td>13.34</td><td class="g">+15.4%</td><td class="g">+5.15</td><td><span class="bdg bg">獲利了結候選</span></td></tr>
+      <tr class="rg"><td>2347</td><td>77.00</td><td>70.00</td><td class="g">+10.0%</td><td class="g">+3.5</td><td><span class="bdg bg">盈利</span></td></tr>
+      <tr class="rg"><td>2834</td><td>14.85</td><td>13.43</td><td class="g">+10.6%</td><td class="g">+5.04</td><td><span class="bdg bg">盈利</span></td></tr>
+      <tr class="rg"><td>2838</td><td>19.90</td><td>14.08</td><td class="g">+41.4%</td><td class="g">+0.58</td><td><span class="bdg bg">盈利</span></td></tr>
+    </table>
+  </div>
+
+  <!-- ── 失誤根因 ── -->
+  <div class="sec"><span class="sec-icon">❌</span> 預測失誤根因 — 三個失效假設</div>
+  <div class="warn">
+    <strong>失誤邏輯鏈：</strong><br><br>
+    預測：台指期夜盤 +2.45% → 現股跟漲 → 台股ETF 預估 +1.5~2.5%<br><br>
+    實際：外資繼續賣超 → 台積電現股補跌 → 全台股ETF 收跌 −2.0~2.2%
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>#</th><th>失效假設</th><th>預測時判斷</th><th>實際發生</th><th>修正方向</th></tr>
+      <tr class="rr"><td>1</td><td>台指期夜盤=現股方向</td><td class="o">+2.45%→現股跟漲</td><td class="r">夜盤流動性低，外資賣超蓋過</td><td>夜盤權重降至30%</td></tr>
+      <tr class="ro"><td>2</td><td>TSM ADR跌幅「已消化」</td><td class="o">台指期反彈→ADR已消化</td><td class="r">台積電現股持續受壓補跌</td><td>ADR跌幅殘留50%承壓</td></tr>
+      <tr class="ro"><td>3</td><td>川普口頭降級=正面</td><td class="o">週五發言→市場買進</td><td class="r">市場信賴度低，通牒仍是主軸</td><td>政治口頭訊號折扣50%</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 模型修正 ── -->
+  <div class="sec"><span class="sec-icon">🔧</span> 預測模型修正（下次適用）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>預測因子</th><th>原權重</th><th>修正後</th><th>理由</th></tr>
+      <tr class="rr"><td>🔴 外資期現貨買賣超</td><td class="r">10%</td><td class="g"><strong>50%</strong></td><td>開盤最關鍵定價力量，必須首先確認</td></tr>
+      <tr class="ro"><td>🟡 台指期夜盤方向</td><td class="o">60%</td><td class="y"><strong>30%</strong></td><td>低流動性，容易被少量資金扭曲</td></tr>
+      <tr class="rb"><td>🔵 TSM ADR跌幅殘留</td><td class="gr">「已消化」</td><td class="b"><strong>殘留50%次日承壓</strong></td><td>需至少1.5個交易日完全反映</td></tr>
+      <tr class="ra"><td>⚪ 地緣政治口頭訊號</td><td class="gr">正面採信</td><td class="gr"><strong>折扣50%可信度</strong></td><td>川普言論與行動常背離，需看實際行動</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 觀察股 ── -->
+  <div class="sec"><span class="sec-icon">👁️</span> 觀察股收盤（3/23）</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>開盤</th><th>收盤</th><th>全日走勢</th><th>意義</th></tr>
+      <tr class="rr"><td>2344 華邦電</td><td class="r">106</td><td class="r">107.5</td><td class="g">開低收高 +1.4%</td><td>開盤恐慌後小幅反彈，記憶體族群底部支撐浮現</td></tr>
+      <tr class="ro"><td>2408 南亞科</td><td class="r">224</td><td class="r">223</td><td class="gr">幾乎持平</td><td>開盤重跌後守穩，未繼續破底</td></tr>
+      <tr class="rb"><td>2855 統一證</td><td>—</td><td>31.35</td><td class="gr">觀察中</td><td>金融券商股，指數連動</td></tr>
+      <tr class="rb"><td>2884 玉山金</td><td>—</td><td>31.15</td><td class="gr">觀察中</td><td>金控股，殖利率保護</td></tr>
+      <tr class="rb"><td>2889 國票金</td><td>—</td><td>16.70</td><td class="gr">觀察中</td><td>小型金控</td></tr>
+      <tr class="rb"><td>8112 至上</td><td>—</td><td>81.80</td><td class="gr">觀察中</td><td>電子通路，聯強同業</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 明日操作建議 ── -->
+  <div class="sec"><span class="sec-icon">📌</span> 明日（3/24）操作重點</div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>標的</th><th>收盤</th><th>建議</th><th>理由</th></tr>
+      <tr class="ry"><td>006208（172.25）</td><td class="r">距低接目標165–170</td><td>持續觀察，跌破170再分批承接</td><td>全天無反彈，外資賣壓未止</td></tr>
+      <tr class="rr"><td>00687B（28.10）</td><td class="r">累計虧損-96萬</td><td>按兵不動，等降息明確訊號</td><td>US20Y仍在4.97%高位</td></tr>
+      <tr class="ro"><td>00720B（32.88）</td><td class="r">累計虧損-64萬</td><td>持有等降息，不停損</td><td>投資級信用風險低，純屬利率壓力</td></tr>
+      <tr class="rr"><td>00771（15.95）</td><td class="r">累計虧損-9.0萬（-16.3%）</td><td>⚡ 逢任何反彈立刻出清</td><td>趨勢最弱，繼續持有機會成本高</td></tr>
+      <tr class="rg"><td>00882（15.40）</td><td class="g">累計盈利+5.1萬（+15.4%）</td><td>⚡ 目標16元附近獲利了結</td><td>兌現獲利，資金還台新信貸</td></tr>
+      <tr class="rg"><td>00953B（9.63）</td><td class="g">最穩定標的</td><td>跌至9.40–9.50可加碼</td><td>非投等債抗利率，配息穩定</td></tr>
+    </table>
+  </div>
+
+  <div class="note">⚠️ 今日全14檔無一收漲，是系統性賣壓而非個別標的問題。006208+00720B合計今日損失135.9萬，佔總損失79%。核心教訓：在外資連續賣超的環境下，台指期夜盤的方向性意義大幅下降，需以外資實際動向為首要判斷依據。免責聲明：本分析不構成投資建議。</div>
+</div>
 
 <script>
-/* =========================
-   ✅ 你的 Worker API
-   ========================= */
-const QUOTE_API = "https://air904.air904.workers.dev/quotes";
-
-/* =========================
-   localStorage keys
-   ========================= */
-const HOLDINGS_KEY='portfolio-holdings-v2';
-const CASH_KEY='portfolio-cash-v2';
-const DEBT_KEY='portfolio-debts-v2';
-const AUTO_KEY='portfolio-auto-v1';
-const UI_SCALE_KEY='portfolio-ui-scale-v1';
-
-/* =========================
-   defaults
-   ========================= */
-let HOLDINGS = [
-  {sym:'00687B', name:'國泰20年美債',     g:'bond', shares:640000,  cost:30.24, base:29.03},
-  {sym:'00720B', name:'元大投資級公司債', g:'bond', shares:650000,  cost:33.87, base:33.82},
-  {sym:'00953B', name:'群益優選非投等債', g:'bond', shares:1935000, cost:9.59,  base:9.71},
-  {sym:'00937B', name:'群益ESG投等債20+', g:'bond', shares:155000,  cost:14.83, base:15.16},
-  {sym:'00772B', name:'中信高評級公司債', g:'bond', shares:65000,   cost:35.69, base:34.50},
-  {sym:'006208', name:'富邦台50',         g:'etf',  shares:5106,    cost:121.90,base:178.20},
-  {sym:'0050',   name:'元大台灣50',       g:'etf',  shares:5246,    cost:51.39, base:76.85},
-  {sym:'00878',  name:'國泰永續高股息',   g:'etf',  shares:10000,   cost:18.29, base:22.39},
-  {sym:'0056',   name:'元大高股息',       g:'etf',  shares:5000,    cost:32.23, base:38.63},
-  {sym:'00882',  name:'中信中國高股息',   g:'etf',  shares:25000,   cost:13.34, base:16.05},
-  {sym:'00771',  name:'元大US高息特別股', g:'etf',  shares:29000,   cost:19.06, base:16.29},
-  {sym:'2834',   name:'臺企銀',           g:'stk',  shares:35509,   cost:13.43, base:15.45},
-  {sym:'2347',   name:'聯強',             g:'stk',  shares:5000,    cost:70.00, base:70.50},
-  {sym:'2838',   name:'聯邦銀',           g:'stk',  shares:1000,    cost:14.08, base:19.75},
-  {sym:'2889',   name:'國票金',           g:'stk',  shares:420,     cost:12.32, base:15.85},
-];
-
-let CASH = { hsbc: 0, taishin: 0, ctbc: 0 };
-
-let DEBTS = [
-  { id:cryptoRandomId(), name:'台新信貸',  bal:554,  apr:2.28, mo:7.73, due:'2032/07', tag:'🔴' },
-  { id:cryptoRandomId(), name:'富邦信貸',  bal:314,  apr:2.23, mo:5.89, due:'2030/09', tag:'🟠' },
-  { id:cryptoRandomId(), name:'安泰信貸',  bal:157,  apr:1.98, mo:2.55, due:'2031/07', tag:'🟡' },
-  { id:cryptoRandomId(), name:'匯豐房貸',  bal:893,  apr:2.20, mo:3.56, due:'長期',    tag:'🔵' },
-  { id:'pledge',         name:'股票質押',  bal:2428, apr:2.20, mo:4.45, due:'彈性',    tag:'⚙️' },
-  { id:cryptoRandomId(), name:'親人借貸',  bal:600,  apr:0.00, mo:0.00, due:'無期限',  tag:'✅' },
-];
-
-/* =========================
-   globals
-   ========================= */
-let lastKnown = null;
-let autoTimer = null;
-
-/* bottom summary state */
-let bsIndex = 0;        // 0..2
-let bsTouch = null;     // touch tracking
-let bsCompact = false;  // compact mode
-
-/* =========================
-   helpers
-   ========================= */
-function cryptoRandomId(){
-  if (crypto?.randomUUID) return crypto.randomUUID();
-  return 'id-'+Math.random().toString(16).slice(2)+Date.now().toString(16);
+function showTab(id){
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
 }
-const fmt=(n,d=1)=>Number(n||0).toFixed(d);
-const fmtPnl=n=>(n>=0?'＋':'')+fmt(n)+'萬';
-const fmtPct=n=>(n>=0?'＋':'')+Number(n||0).toFixed(2)+'%';
-function setEl(id,txt,cls){
-  const e=document.getElementById(id);
-  if(!e) return;
-  e.textContent=txt;
-  if(cls) e.className=cls;
-}
-function totalCash(){ return (+CASH.hsbc||0)+(+CASH.taishin||0)+(+CASH.ctbc||0); }
-function totalDebt(){ return DEBTS.reduce((s,d)=>s+(+d.bal||0),0); }
-function pledgeDebt(){
-  const p = DEBTS.find(d=>d.id==='pledge');
-  return p ? (+p.bal||0) : 0;
-}
-function escapeHtml(s){
-  return String(s??'')
-    .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
-    .replaceAll('"','&quot;').replaceAll("'","&#039;");
-}
-
-/* =========================
-   UI Scale
-   ========================= */
-function loadUiScale(){
-  try{
-    const v = localStorage.getItem(UI_SCALE_KEY);
-    const n = v ? parseFloat(v) : NaN;
-    if(!isNaN(n) && n>=1.0 && n<=2.0) return n;
-  }catch(e){}
-  return 1.30;
-}
-function setUiScale(scale){
-  const s = Math.max(1.0, Math.min(2.0, Number(scale)||1.30));
-  document.documentElement.style.setProperty('--uiScale', s.toFixed(2));
-  try{ localStorage.setItem(UI_SCALE_KEY, s.toFixed(2)); }catch(e){}
-}
-function applyUiScale(){
-  const sel=document.getElementById('uiScaleSel');
-  if(!sel) return;
-  setUiScale(sel.value);
-  alert('✅ 已套用顯示放大');
-}
-
-/* =========================
-   localStorage load/save
-   ========================= */
-function loadAll(){
-  try{
-    const j = JSON.parse(localStorage.getItem(HOLDINGS_KEY)||'null');
-    if(Array.isArray(j) && j.length) HOLDINGS = j;
-  }catch(e){}
-  try{
-    const j = JSON.parse(localStorage.getItem(CASH_KEY)||'null');
-    if(j && typeof j==='object') CASH = { hsbc:+j.hsbc||0, taishin:+j.taishin||0, ctbc:+j.ctbc||0 };
-  }catch(e){}
-  try{
-    const j = JSON.parse(localStorage.getItem(DEBT_KEY)||'null');
-    if(Array.isArray(j) && j.length) DEBTS = j;
-  }catch(e){}
-}
-function saveHoldings(){ try{ localStorage.setItem(HOLDINGS_KEY, JSON.stringify(HOLDINGS)); }catch(e){} }
-function saveCash(){ try{ localStorage.setItem(CASH_KEY, JSON.stringify(CASH)); }catch(e){} }
-function saveDebts(){ try{ localStorage.setItem(DEBT_KEY, JSON.stringify(DEBTS)); }catch(e){} }
-
-/* =========================
-   nav
-   ========================= */
-function showSec(id, el){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
-  document.getElementById('sec-'+id).classList.add('active');
-  el.classList.add('active');
-  window.scrollTo(0,0);
-  if(id==='set') renderSettingsPage();
-  if(id==='debt') renderDebtPage();
-}
-
-/* =========================
-   render holding cards
-   ========================= */
-function renderHoldingCards(prices, prevCloses){
-  const groups = { bond:'bondCards', etf:'etfCards', stk:'stkCards' };
-  Object.keys(groups).forEach(g=>{
-    const container=document.getElementById(groups[g]);
-    if(!container) return;
-    container.innerHTML='';
-    HOLDINGS.filter(h=>h.g===g).forEach(h=>{
-      const p = prices?.[h.sym] ?? null;
-      const prev = prevCloses?.[h.sym] ?? null;
-
-      const costVal = h.shares*(+h.cost||0)/10000;
-      const curVal  = h.shares*((p ?? (+h.base||0)))/10000;
-      const pnl = curVal - costVal;
-      const pnlPct = costVal>0 ? (pnl/costVal*100) : 0;
-
-      let dayPnl = null;
-      if(p!=null && prev!=null) dayPnl = h.shares*(p-prev)/10000;
-
-      const pc = pnl>=0?'cg':'cr';
-      const dpc = dayPnl===null?'cgr':(dayPnl>=0?'g':'r');
-
-      container.innerHTML += `
-        <div class="hcard">
-          <div class="hcard-top">
-            <div>
-              <div class="hcard-sym">${h.sym}</div>
-              <div class="hcard-name">${h.name}</div>
-            </div>
-            <div class="hcard-right">
-              <div class="hcard-price ${pc}">${p!=null ? Number(p).toFixed(2) : '—'}</div>
-              <div class="hcard-day ${dpc}">當日 ${dayPnl===null ? '—' : fmtPnl(dayPnl)}</div>
-            </div>
-          </div>
-          <div class="hcard-bottom">
-            <div class="hcard-stat"><div class="lbl">股數</div><div class="val cgr">${(h.shares/10000).toFixed(2)}萬</div></div>
-            <div class="hcard-stat"><div class="lbl">成本</div><div class="val cgr">${Number(h.cost||0).toFixed(2)}</div></div>
-            <div class="hcard-stat"><div class="lbl">損益</div><div class="val ${pc}">${fmtPnl(pnl)}</div></div>
-            <div class="hcard-stat"><div class="lbl">損益%</div><div class="val ${pc}">${fmtPct(pnlPct)}</div></div>
-          </div>
-        </div>`;
-    });
-  });
-}
-
-/* =========================
-   compute & update
-   ========================= */
-function computePortfolio(prices, prevCloses){
-  let totCur=0, totCost=0, totPrev=0;
-  let bondV=0, etfV=0, stkV=0;
-
-  HOLDINGS.forEach(h=>{
-    const cost = (+h.cost||0), base=(+h.base||0);
-    const p = prices?.[h.sym] ?? null;
-    const prev = prevCloses?.[h.sym] ?? null;
-    const curPrice = (p ?? base);
-    const prevPrice = (prev ?? base);
-
-    const curVal = h.shares*curPrice/10000;
-    const costVal = h.shares*cost/10000;
-    const prevVal = h.shares*prevPrice/10000;
-
-    totCur += curVal;
-    totCost += costVal;
-    totPrev += prevVal;
-
-    if(h.g==='bond') bondV += curVal;
-    else if(h.g==='etf') etfV += curVal;
-    else if(h.g==='stk') stkV += curVal;
-  });
-
-  const cash = totalCash();
-  const debt = totalDebt();
-  const pledgeBal = pledgeDebt();
-  const totalAsset = totCur + cash;
-  const net = totalAsset - debt;
-  const dr = totalAsset>0 ? (debt/totalAsset*100) : 0;
-
-  const pnl = totCur - totCost;
-  const pnlPct = totCost>0 ? (pnl/totCost*100) : 0;
-
-  const dayPnl = totCur - totPrev;
-  const dayPct = totPrev>0 ? (dayPnl/totPrev*100) : 0;
-
-  const pledge = pledgeBal>0 ? (totCur/pledgeBal*100) : 0;
-
-  return { totCur, totCost, totPrev, cash, debt, pledgeBal, totalAsset, net, dr, pnl, pnlPct, dayPnl, dayPct, bondV, etfV, stkV, pledge };
-}
-
-function marketText(marketState){
-  // Worker 可能回 null，這裡用 prevClose 是否存在來猜（保守）
-  if(marketState==='REGULAR') return '盤中';
-  if(marketState==='CLOSED') return '收盤';
-  if(marketState==='POST' || marketState==='POSTPOST') return '盤後';
-  return '—';
-}
-
-function applyMarketBadge(marketState){
-  const el=document.getElementById('mkBadge');
-  if(!el) return;
-  const isLive = marketState==='REGULAR';
-  el.textContent = `狀態：${isLive ? '盤中' : '收盤'}`;
-  el.className = 'badge ' + (isLive ? 'bgG' : 'bgR');
-
-  // bottom summary
-  const mk=document.getElementById('bs-mk');
-  if(mk){
-    const t = marketText(marketState);
-    mk.textContent = t;
-    mk.className = 'bs-value ' + (t==='盤中'?'cg':(t==='收盤'?'cr':'cb'));
-  }
-}
-
-/* ✅ bottom summary update */
-function updateBottomSummary(c, marketState){
-  // page 1
-  setEl('bs-asset', fmt(c.totalAsset)+'萬', 'bs-value cy');
-  setEl('bs-net', fmt(c.net)+'萬', 'bs-value '+(c.net>=0?'co':'cr'));
-  setEl('bs-dr', fmt(c.dr,1)+'%', 'bs-value cr');
-
-  // page 2
-  setEl('bs-day', fmtPnl(c.dayPnl), 'bs-value '+(c.dayPnl>=0?'g':'r'));
-  setEl('bs-daypct', fmtPct(c.dayPct), 'bs-value '+(c.dayPct>=0?'g':'r'));
-  // bs-mk 在 applyMarketBadge 裡更新（順便控色）
-
-  // page 3
-  setEl('bs-total', fmtPnl(c.pnl), 'bs-value '+(c.pnl>=0?'g':'r'));
-  setEl('bs-totalpct', fmtPct(c.pnlPct), 'bs-value '+(c.pnlPct>=0?'g':'r'));
-  const pledgeCls = c.pledge>160?'cg':(c.pledge>130?'co':'cr');
-  setEl('bs-pledge', fmt(c.pledge,0)+'%', 'bs-value '+pledgeCls);
-
-  // title/sub
-  const titles = ['總覽', '當日', '總損益'];
-  document.getElementById('bsTitle').textContent = titles[bsIndex] || '總覽';
-  document.getElementById('bsSub').textContent = bsCompact ? '小條模式' : '固定列 · 自動收縮';
-
-  // market text
-  applyMarketBadge(marketState);
-}
-
-function updateDashboard(prices, prevCloses, marketState){
-  const c = computePortfolio(prices, prevCloses);
-  if(c.totalAsset<=0) return;
-
-  setEl('ov-val', fmt(c.totCur)+'萬', 'cv cy');
-  setEl('ov-sub', '最新報價', 'cs');
-
-  setEl('ov-cash', fmt(c.cash,0)+'萬', 'cv cb');
-  setEl('ov-cash-sub', `匯豐${CASH.hsbc||0} / 台新${CASH.taishin||0} / 中信${CASH.ctbc||0}`, 'cs');
-
-  setEl('ov-net', fmt(c.net)+'萬', 'cv '+(c.net>=0?'co':'cr'));
-  setEl('ov-debt', fmt(c.debt,0)+'萬', 'cv cr');
-  setEl('ov-dr', fmt(c.dr,1)+'%', 'cv cr');
-
-  const pledgeCls = c.pledge>160?'cg':(c.pledge>130?'co':'cr');
-  setEl('ov-pledge', fmt(c.pledge,0)+'%', 'cv '+pledgeCls);
-
-  const pc = c.pnl>=0?'cg':'cr';
-  setEl('ov-pnl', fmtPnl(c.pnl), 'cv '+pc);
-  setEl('ov-pnl-sub', fmtPct(c.pnlPct)+' vs 成本', 'cs');
-
-  const dc = c.dayPnl>=0?'cg':'cr';
-  setEl('ov-day', fmtPnl(c.dayPnl), 'cv '+dc);
-
-  // pnl section
-  setEl('p-val', fmt(c.totCur)+'萬', 'cv cy');
-  setEl('p-sub', '最新報價', 'cs');
-  setEl('p-pnl', fmtPnl(c.pnl), 'cv '+pc);
-  setEl('p-pnl-sub', fmtPct(c.pnlPct)+' vs 成本', 'cs');
-  setEl('p-day', fmtPnl(c.dayPnl), 'cv '+dc);
-  setEl('p-cost', fmt(c.totCost)+'萬', 'cv cb');
-
-  // day bar
-  const db=document.getElementById('dayBar');
-  if(db) db.style.display='block';
-  const now=new Date();
-  setEl('dTime', now.getHours()+':'+String(now.getMinutes()).padStart(2,'0'), 'val cgr');
-  setEl('dVal', fmt(c.totalAsset)+'萬', 'val cy');
-  setEl('dPnl', fmtPnl(c.dayPnl), 'val '+dc);
-  setEl('dPct', fmtPct(c.dayPct), 'val '+dc);
-  setEl('dNet', fmt(c.net)+'萬', 'val '+(c.net>=0?'co':'cr'));
-
-  // allocation
-  const totA = c.bondV + c.etfV + c.stkV + c.cash;
-  const pct = x => totA>0 ? (x/totA*100) : 0;
-  setEl('al-bond', pct(c.bondV).toFixed(1)+'%', 'cv cb'); setEl('al-bond-v', c.bondV.toFixed(0)+'萬', 'cs');
-  setEl('al-etf',  pct(c.etfV ).toFixed(1)+'%', 'cv cg'); setEl('al-etf-v',  c.etfV.toFixed(0)+'萬', 'cs');
-  setEl('al-stk',  pct(c.stkV ).toFixed(1)+'%', 'cv co'); setEl('al-stk-v',  c.stkV.toFixed(0)+'萬', 'cs');
-  setEl('al-cash', pct(c.cash).toFixed(1)+'%',  'cv cy'); setEl('al-cash-v', c.cash.toFixed(0)+'萬', 'cs');
-
-  // bars
-  const a = c.totalAsset;
-  const clamp = x => Math.max(0, Math.min(100, x));
-  document.getElementById('pb-port-fill').style.width = clamp(c.totCur/a*100)+'%';
-  document.getElementById('pb-cash-fill').style.width = clamp(c.cash/a*100)+'%';
-  document.getElementById('pb-debt-fill').style.width = clamp(c.debt/a*100)+'%';
-  document.getElementById('pb-net-fill').style.width = clamp(c.net/a*100)+'%';
-
-  setEl('pb-asset', fmt(c.totalAsset)+'萬', 'pbar-val cb');
-  setEl('pb-port', fmt(c.totCur)+'萬', 'pbar-val cg');
-  setEl('pb-cash', fmt(c.cash,0)+'萬', 'pbar-val cy');
-  setEl('pb-debt', fmt(c.debt,0)+'萬', 'pbar-val cr');
-  setEl('pb-net', fmt(c.net)+'萬', 'pbar-val co');
-
-  renderHoldingCards(prices, prevCloses);
-  renderDebtPage();
-
-  const ts=now.toLocaleTimeString('zh-TW');
-  document.getElementById('priceStatus').textContent = `✅ 已更新｜${ts}`;
-
-  // ✅ bottom summary
-  updateBottomSummary(c, marketState);
-}
-
-/* =========================
-   debt page
-   ========================= */
-function renderDebtPage(){
-  const debt = totalDebt();
-  const mo = DEBTS.reduce((s,d)=>s+(+d.mo||0),0);
-  const intY = DEBTS.reduce((s,d)=>s+((+d.bal||0)*(+d.apr||0)/100),0);
-  const wApr = debt>0 ? (intY/debt*100) : 0;
-
-  setEl('d-tot', fmt(debt,0)+'萬', 'cv cr');
-  setEl('d-mo', fmt(mo,2)+'萬', 'cv cr');
-  setEl('d-int', fmt(intY,1)+'萬', 'cv co');
-  setEl('d-apr', fmt(wApr,2)+'%', 'cv cy');
-
-  const el=document.getElementById('debtList');
-  if(!el) return;
-  el.innerHTML='';
-  DEBTS.forEach(d=>{
-    el.innerHTML += `
-      <div class="dcard">
-        <div class="dcard-top">
-          <span class="dcard-name">${d.tag||'💳'} ${escapeHtml(d.name||'—')}</span>
-          <span class="dcard-badge ${d.id==='pledge'?'bo2':(d.apr>=2.2?'br2':'bb2')}">${d.id==='pledge'?'質押':(d.apr>=2.2?'高':'一般')}</span>
-        </div>
-        <div class="dcard-row">
-          <div class="dcard-item"><div class="lbl">餘額</div><div class="val cr">${fmt(d.bal,0)}萬</div></div>
-          <div class="dcard-item"><div class="lbl">利率</div><div class="val co">${fmt(d.apr,2)}%</div></div>
-          <div class="dcard-item"><div class="lbl">月還</div><div class="val cr">${fmt(d.mo,2)}萬</div></div>
-          <div class="dcard-item"><div class="lbl">到期</div><div class="val cb">${escapeHtml(d.due||'—')}</div></div>
-        </div>
-      </div>
-    `;
-  });
-}
-
-/* =========================
-   settings page (add/remove/edit)
-   ========================= */
-function renderSettingsPage(){
-  const s = loadUiScale();
-  const sel = document.getElementById('uiScaleSel');
-  if(sel) sel.value = s.toFixed(2);
-
-  document.getElementById('cash-hsbc').value = CASH.hsbc ?? 0;
-  document.getElementById('cash-taishin').value = CASH.taishin ?? 0;
-  document.getElementById('cash-ctbc').value = CASH.ctbc ?? 0;
-
-  const debtEl = document.getElementById('debtEditor');
-  debtEl.innerHTML='';
-  DEBTS.forEach((d,idx)=>{
-    debtEl.innerHTML += `
-      <div class="dcard">
-        <div class="dcard-top">
-          <span class="dcard-name">${escapeHtml(d.tag||'💳')} ${escapeHtml(d.name||'（未命名）')}</span>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span class="dcard-badge bb2">${d.id==='pledge'?'質押':'負債'}</span>
-            <button class="btnSmall btnDanger" onclick="removeDebt('${d.id}')" ${d.id==='pledge'?'disabled title="質押保留(可改數字，不可刪)"':''}>刪除</button>
-          </div>
-        </div>
-        <div class="dcard-row">
-          <div class="dcard-item"><div class="lbl">名稱</div><input class="inp inpWide" data-debt="${idx}" data-k="name" type="text" value="${escapeHtml(d.name||'')}" /></div>
-          <div class="dcard-item"><div class="lbl">標記</div><input class="inp" data-debt="${idx}" data-k="tag" type="text" value="${escapeHtml(d.tag||'')}" /></div>
-          <div class="dcard-item"><div class="lbl">餘額(萬)</div><input class="inp" data-debt="${idx}" data-k="bal" type="number" step="0.1" value="${d.bal ?? 0}" /></div>
-          <div class="dcard-item"><div class="lbl">利率(%)</div><input class="inp" data-debt="${idx}" data-k="apr" type="number" step="0.01" value="${d.apr ?? 0}" /></div>
-          <div class="dcard-item"><div class="lbl">月還(萬)</div><input class="inp" data-debt="${idx}" data-k="mo" type="number" step="0.01" value="${d.mo ?? 0}" /></div>
-          <div class="dcard-item"><div class="lbl">到期</div><input class="inp inpWide" data-debt="${idx}" data-k="due" type="text" value="${escapeHtml(d.due||'')}" /></div>
-        </div>
-      </div>
-    `;
-  });
-
-  const holdEl = document.getElementById('holdEditor');
-  holdEl.innerHTML='';
-  HOLDINGS.forEach((h,idx)=>{
-    holdEl.innerHTML += `
-      <div class="hcard">
-        <div class="hcard-top">
-          <div>
-            <div class="hcard-sym">${escapeHtml(h.sym || '—')}</div>
-            <div class="hcard-name">${escapeHtml(h.name||'（未命名）')} · ${escapeHtml(h.g||'—')}</div>
-          </div>
-          <button class="btnSmall btnDanger" onclick="removeHolding(${idx})">刪除</button>
-        </div>
-        <div class="hcard-bottom">
-          <div class="hcard-stat"><div class="lbl">代號</div><input class="inp" data-h="${idx}" data-k="sym" type="text" value="${escapeHtml(h.sym||'')}" /></div>
-          <div class="hcard-stat"><div class="lbl">名稱</div><input class="inp inpWide" data-h="${idx}" data-k="name" type="text" value="${escapeHtml(h.name||'')}" /></div>
-          <div class="hcard-stat"><div class="lbl">類別</div>
-            <select class="inp" data-h="${idx}" data-k="g">
-              <option value="bond" ${h.g==='bond'?'selected':''}>bond</option>
-              <option value="etf"  ${h.g==='etf'?'selected':''}>etf</option>
-              <option value="stk"  ${h.g==='stk'?'selected':''}>stk</option>
-            </select>
-          </div>
-          <div class="hcard-stat"><div class="lbl">股數</div><input class="inp" data-h="${idx}" data-k="shares" type="number" step="1" value="${h.shares ?? 0}" /></div>
-          <div class="hcard-stat"><div class="lbl">成本</div><input class="inp" data-h="${idx}" data-k="cost" type="number" step="0.01" value="${h.cost ?? 0}" /></div>
-          <div class="hcard-stat"><div class="lbl">基準價</div><input class="inp" data-h="${idx}" data-k="base" type="number" step="0.01" value="${h.base ?? 0}" /></div>
-        </div>
-      </div>
-    `;
-  });
-
-  const auto = loadAuto();
-  document.getElementById('autoOn').value = auto.on ? 'on' : 'off';
-  document.getElementById('autoMin').value = auto.min;
-}
-
-function addDebt(){
-  DEBTS.push({ id: cryptoRandomId(), name:'新負債', bal:0, apr:0, mo:0, due:'', tag:'💳' });
-  renderSettingsPage();
-}
-function removeDebt(id){
-  if(!confirm('確定刪除此負債？')) return;
-  DEBTS = DEBTS.filter(d=>d.id!==id);
-  if(!DEBTS.find(d=>d.id==='pledge')){
-    DEBTS.unshift({ id:'pledge', name:'股票質押', bal:0, apr:0, mo:0, due:'彈性', tag:'⚙️' });
-  }
-  renderSettingsPage();
-}
-function addHolding(){
-  HOLDINGS.push({ sym:'', name:'新持股', g:'etf', shares:0, cost:0, base:0 });
-  renderSettingsPage();
-}
-function removeHolding(idx){
-  if(!confirm('確定刪除此持股？')) return;
-  HOLDINGS.splice(idx,1);
-  renderSettingsPage();
-}
-
-function saveAllSettings(){
-  CASH.hsbc = parseFloat(document.getElementById('cash-hsbc')?.value || '0') || 0;
-  CASH.taishin = parseFloat(document.getElementById('cash-taishin')?.value || '0') || 0;
-  CASH.ctbc = parseFloat(document.getElementById('cash-ctbc')?.value || '0') || 0;
-  saveCash();
-
-  document.querySelectorAll('[data-debt]').forEach(inp=>{
-    const idx = parseInt(inp.getAttribute('data-debt'),10);
-    const k = inp.getAttribute('data-k');
-    if(!DEBTS[idx]) return;
-    if(['name','tag','due'].includes(k)) DEBTS[idx][k] = inp.value;
-    else DEBTS[idx][k] = parseFloat(inp.value||'0') || 0;
-  });
-  if(!DEBTS.find(d=>d.id==='pledge')){
-    DEBTS.unshift({ id:'pledge', name:'股票質押', bal:0, apr:0, mo:0, due:'彈性', tag:'⚙️' });
-  }
-  saveDebts();
-
-  document.querySelectorAll('[data-h]').forEach(inp=>{
-    const idx = parseInt(inp.getAttribute('data-h'),10);
-    const k = inp.getAttribute('data-k');
-    if(!HOLDINGS[idx]) return;
-    if(k==='shares') HOLDINGS[idx][k] = parseInt(inp.value||'0',10) || 0;
-    else if(k==='g') HOLDINGS[idx][k] = inp.value;
-    else if(k==='sym' || k==='name') HOLDINGS[idx][k] = inp.value.trim();
-    else HOLDINGS[idx][k] = parseFloat(inp.value||'0') || 0;
-  });
-  HOLDINGS = HOLDINGS.filter(h => (h.sym||'').trim()!=='');
-
-  saveHoldings();
-
-  if(lastKnown?.prices){
-    updateDashboard(lastKnown.prices, lastKnown.prevCloses, lastKnown.marketState);
-  }else{
-    const p={}, pc={};
-    HOLDINGS.forEach(h=>{ p[h.sym]=(+h.base||0); pc[h.sym]=(+h.base||0); });
-    lastKnown = { prices:p, prevCloses:pc, marketState:null, ts:Date.now() };
-    updateDashboard(p, pc, null);
-  }
-
-  alert('✅ 已保存設定');
-}
-
-/* =========================
-   Auto refresh
-   ========================= */
-function loadAuto(){
-  try{
-    const j=JSON.parse(localStorage.getItem(AUTO_KEY)||'null');
-    if(j && typeof j==='object') return { on:!!j.on, min:Math.max(1, +j.min||5) };
-  }catch(e){}
-  return { on:false, min:5 };
-}
-function saveAuto(on,min){
-  try{ localStorage.setItem(AUTO_KEY, JSON.stringify({on, min})); }catch(e){}
-}
-function applyAuto(){
-  const on = (document.getElementById('autoOn').value==='on');
-  const min = Math.max(1, parseInt(document.getElementById('autoMin').value||'5',10));
-  saveAuto(on,min);
-  setupAutoTimer();
-  alert('✅ 已套用自動更新');
-}
-function setupAutoTimer(){
-  if(autoTimer){ clearInterval(autoTimer); autoTimer=null; }
-  const a = loadAuto();
-  if(!a.on) return;
-  autoTimer = setInterval(()=>{ fetchLatestPrices(true); }, a.min*60*1000);
-}
-
-/* =========================
-   Fetch prices (Worker)
-   ========================= */
-async function fetchLatestPrices(isAuto=false){
-  const btn=document.getElementById('refreshBtn');
-  const icon=document.getElementById('refreshIcon');
-
-  btn.disabled=true; icon.textContent='⏳'; icon.className='spin';
-  try{
-    const syms = HOLDINGS.map(h=>h.sym).filter(Boolean);
-    if(!syms.length) throw new Error('沒有持股，請先到「設定」新增');
-
-    const url = `${QUOTE_API}?symbols=${encodeURIComponent(syms.join(','))}`;
-    const r = await fetch(url, { method:'GET' });
-    if(!r.ok) throw new Error('Worker 回應錯誤：'+r.status);
-
-    const j = await r.json();
-    const data = j?.data || {};
-    const prices={}, prevCloses={};
-    let marketState = null;
-
-    syms.forEach(sym=>{
-      const it = data?.[sym] || null;
-      const p = it?.price;
-      const pc = it?.prevClose;
-      if(typeof p==='number') prices[sym]=p;
-      if(typeof pc==='number') prevCloses[sym]=pc;
-      if(!marketState && it?.marketState) marketState = it.marketState;
-    });
-
-    HOLDINGS.forEach(h=>{
-      if(prices[h.sym]==null) prices[h.sym] = (+h.base||0);
-      if(prevCloses[h.sym]==null) prevCloses[h.sym] = (+h.base||0);
-    });
-
-    lastKnown = { prices, prevCloses, marketState, ts:Date.now() };
-    updateDashboard(prices, prevCloses, marketState);
-
-    const got = Object.keys(data||{}).length;
-    document.getElementById('priceStatus').textContent =
-      `✅ 已更新 ${got}/${syms.length} 檔（Worker）${isAuto?'｜自動':''}`;
-
-  }catch(err){
-    if(!isAuto) alert('更新失敗：'+err.message);
-    document.getElementById('priceStatus').textContent = '❌ 更新失敗：'+err.message;
-  }finally{
-    btn.disabled=false; icon.textContent='🔄'; icon.className='';
-  }
-}
-
-/* =========================
-   ✅ Bottom summary: swipe + compact on scroll
-   ========================= */
-function bsRender(){
-  const pages = document.getElementById('bsPages');
-  pages.style.transform = `translateX(-${bsIndex * (100/3)}%)`;
-
-  document.getElementById('dot0').classList.toggle('on', bsIndex===0);
-  document.getElementById('dot1').classList.toggle('on', bsIndex===1);
-  document.getElementById('dot2').classList.toggle('on', bsIndex===2);
-
-  if(lastKnown?.prices){
-    const c = computePortfolio(lastKnown.prices, lastKnown.prevCloses);
-    updateBottomSummary(c, lastKnown.marketState);
-  }
-}
-function bsSetCompact(on){
-  bsCompact = !!on;
-  document.getElementById('bsWrap').classList.toggle('bs-compact', bsCompact);
-  // 更新副標
-  const c = lastKnown?.prices ? computePortfolio(lastKnown.prices, lastKnown.prevCloses) : null;
-  if(c) updateBottomSummary(c, lastKnown.marketState);
-}
-
-/* swipe detection on bottom bar */
-function initBottomSwipe(){
-  const wrap = document.getElementById('bottomSummary');
-  const pages = document.getElementById('bsPages');
-
-  const onTouchStart = (e)=>{
-    if(!e.touches || e.touches.length!==1) return;
-    const t=e.touches[0];
-    bsTouch = { x0:t.clientX, y0:t.clientY, t0:Date.now(), moved:false };
-  };
-  const onTouchMove = (e)=>{
-    if(!bsTouch || !e.touches || e.touches.length!==1) return;
-    const t=e.touches[0];
-    const dx = t.clientX - bsTouch.x0;
-    const dy = t.clientY - bsTouch.y0;
-
-    // 只在「更像水平」的手勢時處理，避免影響頁面上下滑
-    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10){
-      bsTouch.moved = true;
-      e.preventDefault();
-      const base = -(bsIndex * (100/3));
-      const dragPct = (dx / window.innerWidth) * 100;
-      pages.style.transition = 'none';
-      pages.style.transform = `translateX(${base + dragPct}%)`;
-    }
-  };
-  const onTouchEnd = ()=>{
-    if(!bsTouch){ return; }
-    const moved = bsTouch.moved;
-    pages.style.transition = 'transform 220ms ease';
-    if(moved){
-      const dx = (event?.changedTouches?.[0]?.clientX ?? 0) - bsTouch.x0;
-      const v = dx / Math.max(1,(Date.now()-bsTouch.t0)); // px/ms
-      if(dx < -50 || v < -0.45) bsIndex = Math.min(2, bsIndex+1);
-      else if(dx > 50 || v > 0.45) bsIndex = Math.max(0, bsIndex-1);
-      bsRender();
-    }else{
-      bsRender();
-    }
-    bsTouch = null;
-  };
-
-  wrap.addEventListener('touchstart', onTouchStart, {passive:true});
-  wrap.addEventListener('touchmove', onTouchMove, {passive:false});
-  wrap.addEventListener('touchend', onTouchEnd, {passive:true});
-}
-
-/* compact on scroll (shrink when scrolling down, expand when scrolling up or near top) */
-function initScrollCompact(){
-  let lastY = window.scrollY;
-  let ticking = false;
-
-  const update = ()=>{
-    const y = window.scrollY;
-    const dy = y - lastY;
-
-    if(y < 30){
-      bsSetCompact(false);
-    }else{
-      if(dy > 8) bsSetCompact(true);      // scrolling down
-      else if(dy < -10) bsSetCompact(false); // scrolling up
-    }
-
-    lastY = y;
-    ticking = false;
-  };
-
-  window.addEventListener('scroll', ()=>{
-    if(!ticking){
-      ticking = true;
-      requestAnimationFrame(update);
-    }
-  }, {passive:true});
-}
-
-/* =========================
-   init
-   ========================= */
-(function init(){
-  setUiScale(loadUiScale());
-  loadAll();
-  renderDebtPage();
-  renderSettingsPage();
-  setupAutoTimer();
-
-  // base render
-  const p={}, pc={};
-  HOLDINGS.forEach(h=>{ p[h.sym]=(+h.base||0); pc[h.sym]=(+h.base||0); });
-  lastKnown = { prices:p, prevCloses:pc, marketState:null, ts:Date.now() };
-  updateDashboard(p, pc, null);
-
-  // bottom summary
-  initBottomSwipe();
-  initScrollCompact();
-  bsRender();
-})();
 </script>
-
-<!-- PWA Service Worker（可留） -->
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", async () => {
-      try { await navigator.serviceWorker.register("/sw.js"); } catch (e) {}
-    });
-  }
-</script>
-
 </body>
 </html>
